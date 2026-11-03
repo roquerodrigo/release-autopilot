@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1](https://github.com/roquerodrigo/release-autopilot/compare/v1.1.0...v1.1.1) (2026-11-03)
+
+### Improvements
+
+- A major version tag such as v1 now follows each release, so users can track it and receive only released changes. ([#7](https://github.com/roquerodrigo/release-autopilot/pull/7))
+
 ## [1.1.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.0.0...v1.1.0) (2026-11-03)
 
 ### Improvements
