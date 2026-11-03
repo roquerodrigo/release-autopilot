@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.2.0...v1.3.0) (2026-11-03)
+
+Release notes can now be written in any language tag, with regional variants of English using the built-in English texts.
+
+### New features
+
+- The `language` option accepts any language tag, such as `es` or `en-GB`, and a language without built-in texts declares its section titles and support text. ([#14](https://github.com/roquerodrigo/release-autopilot/pull/14))
+- Language tags are accepted in any letter case, so `PT-br` and `pt-BR` give the same notes. ([#14](https://github.com/roquerodrigo/release-autopilot/pull/14))
+
+### Improvements
+
+- Regional English variants such as `en-GB` and `en-US` now use the built-in English texts. ([#14](https://github.com/roquerodrigo/release-autopilot/pull/14))
+- Notes for a HACS project are written in the language of its declared countries when they share one built-in language, and in English otherwise. ([#14](https://github.com/roquerodrigo/release-autopilot/pull/14))
+
 ## [1.2.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.1.2...v1.2.0) (2026-11-03)
 
 ### Improvements
