@@ -1,5 +1,7 @@
 # Release Autopilot
 
+[![Marketplace](https://img.shields.io/badge/Marketplace-Release%20Autopilot-2088ff?logo=githubactions&logoColor=white&style=for-the-badge)](https://github.com/marketplace/actions/release-autopilot)
+[![Release](https://img.shields.io/github/v/release/roquerodrigo/release-autopilot?style=for-the-badge)](https://github.com/roquerodrigo/release-autopilot/releases/latest)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
 
 Semantic releases with notes written for the people who use the project, not a list
@@ -11,6 +13,10 @@ and the GitHub release with the text you reviewed. The pull request carries its 
 notes from its first write, and nothing rewrites it afterwards.
 
 ## Usage
+
+The action is listed on the
+[GitHub Marketplace](https://github.com/marketplace/actions/release-autopilot). Add the
+workflow below, and the secret `ANTHROPIC_API_KEY` with a key for the Claude API:
 
 ```yaml
 name: Release
@@ -41,9 +47,12 @@ jobs:
     # Publish needs.release.outputs.tag to a registry here.
 ```
 
-No file is required in the repository. The workflow is a thin wrapper around the
-action and runs the action at its own commit, so pinning it to a tag or a commit pins
-both. The action can also be used as a step:
+No file is required in the repository. `@main` follows every change as soon as it is
+merged; to stay on a version, use the tag of a
+[release](https://github.com/roquerodrigo/release-autopilot/releases), such as
+`@v1.0.0`, or its commit. The workflow is a thin wrapper around the action and runs the
+action at its own commit, so pinning the workflow pins both. The action can also be
+used as a step:
 
 ```yaml
 - uses: roquerodrigo/release-autopilot@main
@@ -54,8 +63,9 @@ both. The action can also be used as a step:
 ```
 
 `token` needs contents and pull-requests write access. The default `GITHUB_TOKEN`
-works, but its pushes trigger no workflows, so a release pull request opened with it
-runs no checks.
+works once **Allow GitHub Actions to create and approve pull requests** is enabled in
+the settings of the repository, under Actions, but its pushes trigger no workflows, so
+a release pull request opened with it runs no checks.
 
 | Output         | Meaning                                       |
 | -------------- | --------------------------------------------- |
@@ -65,8 +75,9 @@ runs no checks.
 | `pull-request` | The URL of the open release pull request, if any |
 
 `dry-run: true` plans the release and writes its notes, printing what would change
-without changing anything. Nothing counts as published, so `released` stays `"false"`. `preview-previous-tag` and `preview-release-tag` write the
-notes of a past release to the job summary, to judge a prompt by what it produces.
+without changing anything. Nothing counts as published, so `released` stays `"false"`.
+`preview-previous-tag` and `preview-release-tag` write the notes of a past release to
+the job summary, to judge a prompt by what it produces.
 
 ## What it does
 
@@ -133,8 +144,8 @@ language: pt-BR
 
 # Replaces the guidance on what to write and how, which by default is
 # src/infrastructure/default-notes-prompt.md. The rules on markup, breaking commits and
-# instructions found in the data still apply. `summary` is the text above
-# the sections, so the prompt decides what goes there.
+# instructions found in the data still apply. `summary` is the text above the sections,
+# so the prompt decides what goes there.
 prompt: |
   You write the patch notes of a game for the people who play it.
 
