@@ -94,8 +94,12 @@ then sets the next one.
 
 **A release** opens when Claude finds something in the commits that matters to the
 people who use the project. Every commit since the last tag reaches it, conventional or
-not and whatever its type: a dependency bump or a CI change waits, unreleased, until
-something relevant comes along. A breaking commit always opens one.
+not and whatever its type: a CI change or a development dependency waits, unreleased,
+until something relevant comes along. An update of a dependency that reaches the people
+who install the project opens one on its own, since it may close a vulnerability: a
+change to the dependencies declared in `package.json`, `pyproject.toml` or the manifest
+of a plugin, or to the lockfile of something shipped built, such as a container image.
+A breaking commit always opens one.
 
 **The version files** are found on their own, and most projects declare none:
 
