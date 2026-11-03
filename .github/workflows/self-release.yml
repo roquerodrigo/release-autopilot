@@ -25,7 +25,27 @@ jobs:
           persist-credentials: false
 
       - name: Release
+        id: release
         uses: ./ # zizmor: ignore[self-repository]
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # Consumers reference the major version, so `v1` follows every 1.x release and
+      # the first 2.0.0 creates `v2`, leaving `v1` on the last 1.x.
+      - name: Move the major version tag
+        if: steps.release.outputs.released == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          major="${TAG%%.*}"
+          sha="$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$major" --silent 2>/dev/null; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/$major" \
+              -f sha="$sha" -F force=true --silent
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              -f ref="refs/tags/$major" -f sha="$sha" --silent
+          fi
+          echo "$major now points at $TAG ($sha)."
