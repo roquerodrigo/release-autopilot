@@ -27,5 +27,5 @@ const BUILT_IN_TEXTS: Record<string, BuiltInTexts> = {
 }
 
 export function builtInTextsOf(language: string): BuiltInTexts | undefined {
-  return BUILT_IN_TEXTS[language]
+  return BUILT_IN_TEXTS[language] ?? BUILT_IN_TEXTS[new Intl.Locale(language).language]
 }

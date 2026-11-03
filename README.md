@@ -144,8 +144,9 @@ Everything goes in an optional `.release-autopilot.yml` at the root of the repos
 read from the commit being released. Every field can be left out:
 
 ```yaml
-# The language of the notes, as a tag such as "en", "pt-BR" or "es". A language other
-# than "en" and "pt-BR" declares its `sections`, and `support` as a text or `false`.
+# The language of the notes, as a tag such as "en", "pt-BR" or "es". Only "en", with its
+# regional variants such as "en-GB", and "pt-BR" come with built-in texts: any other
+# declares its `sections`, and `support` as a text or `false`.
 language: pt-BR
 
 # Replaces the guidance on what to write and how, which by default is
@@ -211,7 +212,7 @@ changelogs:
     # The same text in a file of its own for each release. It needs {version}.
     release_path: docs/releases/en/{version}.md
 
-  # A language other than "en" and "pt-BR" declares its sections.
+  # A language without built-in texts declares its sections.
   - language: es
     path: docs/CHANGELOG.es.md
     sections:
@@ -223,8 +224,8 @@ changelogs:
 
 Every changelog needs the same sections. The first one keeps `CHANGELOG.md` when it
 names no path, and any other needs a `path`, a `release_path` or both. `support` stays
-at the top of the file, and needs a text or `false` when the first language is neither
-"en" nor "pt-BR".
+at the top of the file, and needs a text or `false` when the first language has no
+built-in texts.
 
 ## Support
 

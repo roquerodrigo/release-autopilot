@@ -100,6 +100,14 @@ initial_version: 0.1.0
     invalid('changelogs:\n  - language: en\n  - language: EN\n    path: b.md\n')
   })
 
+  it('takes the built-in texts of the base language', () => {
+    const british = english('language: en-GB\n')
+    assert.equal(british.primary.language, 'en-GB')
+    assert.equal(british.primary.sectionTitles.fixed, 'Bug fixes')
+    assert.match(british.supportSection('owner/project')!, /### Support/)
+    invalid('language: pt-PT\n')
+  })
+
   it('reads several changelogs and fills in the path of the first', () => {
     const configuration = english(`
 changelogs:
