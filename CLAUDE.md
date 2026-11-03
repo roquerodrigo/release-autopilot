@@ -1,0 +1,35 @@
+# release-autopilot
+
+GitHub Action that cuts semantic releases with notes written by Claude. `README.md` is
+the public contract: inputs, outputs and `.release-autopilot.yml`. Consumers track
+`@main`, so a merge is live everywhere on its next run: treat those names as a public
+contract.
+
+## Architecture
+
+- `src/domain`: pure rules. Commits, configuration, notes, documents. No I/O.
+- `src/application`: the two use cases, `PublishMergedRelease` and
+  `PrepareReleasePullRequest`, behind the ports in `ports.ts`.
+- `src/infrastructure`: the adapters. GitHub, Claude and the planner. The default prompt
+  is `default-notes-prompt.md`, generic for any project and embedded in the bundle.
+- `src/action.ts`: reads the inputs and wires everything. `src/main.ts` only runs it.
+
+## The engine stays hidden
+
+`release-please` only decides: next version, commits since the last release, which of
+them are breaking and the content of the structured version files. `src/infrastructure/release-please-planner.ts`
+is the only file allowed to import it, and only through its public exports. Everything
+visible is written here: branch `release/<target>`, pull request, tag and release.
+
+Never let the engine reach a consumer: no configuration file, manifest, label, branch
+name, annotation or log line of its own. Its `buildPullRequests()` is read-only, and
+nothing here calls its write paths (`createPullRequests`, `createReleases`).
+
+## Verifying a change
+
+- `npx eslint`, `npm test` (type check, tests and coverage). The tests run the real
+  adapters against `tests/fake-github.ts` and `tests/fake-claude.ts`; coverage only
+  counts files the tests load, so a new adapter needs a test that reaches it.
+- `npm run build`, then commit `dist/`. The action runs the bundle, and CI fails when it
+  is stale.
+- `eslint --fix` sorts object keys: never rely on the order of a literal's keys.

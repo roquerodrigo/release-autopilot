@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: Plan the release and write its notes, printing what would change without changing anything.
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      token:
+        description: >-
+          Token with contents and pull-requests write access. Falls back to the
+          default GITHUB_TOKEN, whose pushes do not trigger workflows.
+        required: false
+      anthropic-api-key:
+        description: Key for the Claude API.
+        required: true
+    outputs:
+      released:
+        description: "\"true\" when this run published a release."
+        value: ${{ jobs.release.outputs.released }}
+      tag:
+        description: Tag published by this run, if any.
+        value: ${{ jobs.release.outputs.tag }}
+      version:
+        description: Version published by this run, if any.
+        value: ${{ jobs.release.outputs.version }}
+      pull-request:
+        description: URL of the open release pull request, if any.
+        value: ${{ jobs.release.outputs.pull-request }}
+
+permissions: {}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+      pull-request: ${{ steps.release.outputs.pull-request }}
+    steps:
+      # `uses` takes no expressions, so the action comes from a checkout at the commit of
+      # this workflow. A reference to a branch would ignore the ref the caller pinned.
+      - name: Check out the action
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .release-autopilot-action
+          persist-credentials: false
+
+      - name: Release
+        id: release
+        uses: ./.release-autopilot-action # zizmor: ignore[self-repository]
+        with:
+          token: ${{ secrets.token || github.token }}
+          anthropic-api-key: ${{ secrets.anthropic-api-key }}
+          dry-run: ${{ inputs.dry-run }}

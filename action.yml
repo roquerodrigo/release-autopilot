@@ -6,11 +6,44 @@ branding:
   icon: feather
   color: purple
 
+inputs:
+  token:
+    description: >-
+      Token with contents and pull-requests write access. The default GITHUB_TOKEN
+      works, but its pushes do not trigger workflows, so a release pull request
+      opened with it runs no checks.
+    required: true
+    default: ${{ github.token }}
+  anthropic-api-key:
+    description: Key for the Claude API.
+    required: true
+  repository:
+    description: Repository to release, as owner/name.
+    required: true
+    default: ${{ github.repository }}
+  dry-run:
+    description: Plan the release and write its notes, printing what would change without changing anything.
+    required: false
+    default: "false"
+  preview-previous-tag:
+    description: With preview-release-tag, writes the notes of a past release to the job summary and changes nothing.
+    required: false
+    default: ""
+  preview-release-tag:
+    description: Tag of the past release to preview.
+    required: false
+    default: ""
+
+outputs:
+  released:
+    description: "\"true\" when this run published a release."
+  tag:
+    description: Tag published by this run, if any.
+  version:
+    description: Version published by this run, if any.
+  pull-request:
+    description: URL of the open release pull request, if any.
+
 runs:
-  using: composite
-  steps:
-    - name: Report that the action is not available yet
-      shell: bash
-      run: |
-        echo "::error::This version only reserves the name. The project is under development."
-        exit 1
+  using: node24
+  main: dist/index.cjs

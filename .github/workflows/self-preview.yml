@@ -1,0 +1,64 @@
+name: Notes preview
+
+# Writes the notes of past releases with the code under review and prints them to the
+# job summary, so a change to the prompt is judged by the text it produces. Nothing is
+# written to those repositories, and each run spends API credit, hence the path filter.
+# A pull request without access to the secret skips the call.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - src/infrastructure/default-notes-prompt.md
+      - src/infrastructure/notes-prompt.ts
+      - src/infrastructure/claude-notes-author.ts
+      - .github/workflows/self-preview.yml
+  workflow_dispatch:
+
+concurrency:
+  group: notes-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  preview:
+    name: ${{ matrix.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repository: roquerodrigo/ha-tplink-deco
+            previous-tag: v1.8.0
+            release-tag: v1.9.0
+          - repository: roquerodrigo/ha-enel-sp
+            previous-tag: v1.0.0
+            release-tag: v1.1.0
+    steps:
+      - name: Check for the API key
+        id: credentials
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the repository
+        if: steps.credentials.outputs.available == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Write the notes
+        if: steps.credentials.outputs.available == 'true'
+        uses: ./ # zizmor: ignore[self-repository]
+        with:
+          repository: ${{ matrix.repository }}
+          preview-previous-tag: ${{ matrix.previous-tag }}
+          preview-release-tag: ${{ matrix.release-tag }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
