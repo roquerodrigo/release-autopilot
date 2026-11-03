@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.0.0...v1.1.0) (2026-11-03)
+
+### Improvements
+
+- The action's log now explains each run: the next version, the model used, and why no release pull request was opened or changed. ([#5](https://github.com/roquerodrigo/release-autopilot/pull/5))
+
 ## 1.0.0 (2026-11-03)
 
 First release: a GitHub Action that prepares reviewed release pull requests and publishes the release when they are merged.
