@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-import type { NotesAuthor } from '../application/ports.ts'
+import type { NotesAuthor, Reporter } from '../application/ports.ts'
 import type { ProjectConfiguration } from '../domain/project-configuration.ts'
 import type { WrittenNotes } from '../domain/release-notes.ts'
 import type { ReleaseSource } from '../domain/release-source.ts'
@@ -12,9 +12,11 @@ const MAXIMUM_OUTPUT_TOKENS = 64_000
 
 export class ClaudeNotesAuthor implements NotesAuthor {
   private readonly client: Anthropic
+  private readonly reporter: Reporter
 
-  constructor(client: Anthropic) {
+  constructor(client: Anthropic, reporter: Reporter) {
     this.client = client
+    this.reporter = reporter
   }
 
   async write(source: ReleaseSource, configuration: ProjectConfiguration): Promise<WrittenNotes> {
@@ -28,6 +30,8 @@ export class ClaudeNotesAuthor implements NotesAuthor {
       },
       system: systemPrompt(configuration),
     }).finalMessage()
+    const { input_tokens: inputTokens, output_tokens: outputTokens } = response.usage
+    this.reporter.info(`The model read ${inputTokens} tokens and wrote ${outputTokens}, and stopped with ${response.stop_reason}`)
     if (response.stop_reason !== 'end_turn') {
       throw new RejectedNotesError(`the model stopped with ${response.stop_reason}`)
     }

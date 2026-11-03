@@ -1,6 +1,6 @@
 import type { Octokit } from '@octokit/rest'
 
-import type { ReleasePublisher, ReleasePullRequest, ReleasePullRequestDraft } from '../application/ports.ts'
+import type { ReleasePublisher, ReleasePullRequest, ReleasePullRequestDraft, Reporter } from '../application/ports.ts'
 
 import { releaseBranchOf } from '../application/ports.ts'
 
@@ -16,9 +16,11 @@ export class GitHubReleasePublisher implements ReleasePublisher {
   private readonly octokit: Octokit
   private readonly owner: string
   private readonly repo: string
+  private readonly reporter: Reporter
 
-  constructor(octokit: Octokit, repository: string) {
+  constructor(octokit: Octokit, repository: string, reporter: Reporter) {
     this.octokit = octokit
+    this.reporter = reporter
     const [owner, repo] = repository.split('/')
     this.owner = owner
     this.repo = repo
@@ -27,6 +29,7 @@ export class GitHubReleasePublisher implements ReleasePublisher {
   async closePullRequest(pullRequest: ReleasePullRequest, branch: string): Promise<void> {
     await this.octokit.pulls.update({ ...this.target(), pull_number: pullRequest.number, state: 'closed' })
     await this.octokit.git.deleteRef({ ...this.target(), ref: `heads/${releaseBranchOf(branch)}` })
+    this.reporter.info(`Closed ${pullRequest.url}, since there is nothing left to release`)
   }
 
   async createRelease({ body, tag, targetSha }: { body: string, tag: string, targetSha: string }): Promise<boolean> {
@@ -69,7 +72,10 @@ export class GitHubReleasePublisher implements ReleasePublisher {
           head: draft.head,
           title: draft.title,
         })
-    return toReleasePullRequest(data)
+    const pullRequest = toReleasePullRequest(data)
+    const paths = draft.changes.map((change) => change.path).join(', ')
+    this.reporter.info(`${open ? 'Updated' : 'Opened'} ${pullRequest.url}, "${draft.title}", changing ${paths}`)
+    return pullRequest
   }
 
   private async commitOf(draft: ReleasePullRequestDraft): Promise<string> {

@@ -132,10 +132,15 @@ describe('PrepareReleasePullRequest', () => {
     assert.equal(publisher.written.length, 0)
   })
 
-  it('opens nothing when the model finds nothing relevant', async () => {
+  it('opens nothing when the model finds nothing relevant, and says why', async () => {
     assert.equal(await prepare(PLAN, new FixedAuthor(writtenNotes())).run('main'), undefined)
     assert.equal(publisher.written.length, 0)
     assert.deepEqual(publisher.closed, [])
+    assert.deepEqual(reporter.infos, [
+      'Next version: 1.1.0, from 1 commit on main since v1.0.0',
+      'Writing the notes with claude-haiku-5-5, at medium effort',
+      'Nothing in these commits matters to those who use the project, so no release pull request opens',
+    ])
   })
 
   it('closes the pull request when the model no longer finds anything relevant', async () => {
@@ -152,9 +157,10 @@ describe('PrepareReleasePullRequest', () => {
     assert.deepEqual(publisher.closed, [])
   })
 
-  it('does nothing when there is nothing to release and nothing open', async () => {
+  it('does nothing when there is nothing to release and nothing open, and says why', async () => {
     assert.equal(await prepare(undefined).run('main'), undefined)
     assert.deepEqual(publisher.closed, [])
+    assert.deepEqual(reporter.infos, ['Nothing to release on main: no conventional commit since the last release'])
   })
 
   it('writes every changelog and each file of a release', async () => {
@@ -262,14 +268,18 @@ describe('PublishMergedRelease', () => {
     const reader = new InMemoryReader()
     reader.tags.add('v1.1.0')
     const publisher = new RecordingPublisher()
+    const reporter = new RecordingReporter()
     publisher.merged = merged('1.1.0')
-    assert.equal(await new PublishMergedRelease(reader, publisher, new RecordingReporter()).run('main'), undefined)
+    assert.equal(await new PublishMergedRelease(reader, publisher, reporter).run('main'), undefined)
     assert.deepEqual(publisher.releases, [])
+    assert.deepEqual(reporter.infos, ['v1.1.0, from u, is already published'])
   })
 
   it('publishes nothing without a merged pull request', async () => {
     const publisher = new RecordingPublisher()
-    assert.equal(await new PublishMergedRelease(new InMemoryReader(), publisher, new RecordingReporter()).run('main'), undefined)
+    const reporter = new RecordingReporter()
+    assert.equal(await new PublishMergedRelease(new InMemoryReader(), publisher, reporter).run('main'), undefined)
+    assert.deepEqual(reporter.infos, ['No release pull request has been merged into main yet'])
   })
 
   it('warns about a pull request that lost its record', async () => {

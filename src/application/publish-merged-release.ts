@@ -22,6 +22,7 @@ export class PublishMergedRelease {
   async run(branch: string): Promise<PublishedRelease | undefined> {
     const merged = await this.publisher.findLatestMergedPullRequest(branch)
     if (!merged?.body || !merged.mergeCommitSha) {
+      this.reporter.info(`No release pull request has been merged into ${branch} yet`)
       return undefined
     }
     const state = stateOfPullRequest(merged.body)
@@ -31,6 +32,7 @@ export class PublishMergedRelease {
     }
     const tag = tagOf(state.version)
     if (await this.reader.tagExists(tag)) {
+      this.reporter.info(`${tag}, from ${merged.url}, is already published`)
       return undefined
     }
     const created = await this.publisher.createRelease({

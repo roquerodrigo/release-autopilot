@@ -6,6 +6,7 @@ import { RejectedNotesError } from '../src/domain/errors.ts'
 import { ProjectConfiguration } from '../src/domain/project-configuration.ts'
 import { ClaudeNotesAuthor } from '../src/infrastructure/claude-notes-author.ts'
 import { claudeAnswer } from './fake-claude.ts'
+import { RecordingReporter } from './support.ts'
 
 const SOURCE = { commits: [], repository: 'owner/project' }
 const NOTES = { entries: [], summary: { en: '' } }
@@ -20,7 +21,8 @@ function authorAnswering(text: string | undefined, stopReason = 'end_turn') {
     },
     maxRetries: 0,
   })
-  return { author: new ClaudeNotesAuthor(client), requests }
+  const reporter = new RecordingReporter()
+  return { author: new ClaudeNotesAuthor(client, reporter), reporter, requests }
 }
 
 describe('ClaudeNotesAuthor', () => {
@@ -34,8 +36,9 @@ describe('ClaudeNotesAuthor', () => {
   })
 
   it('falls back to the default model and effort', async () => {
-    const { author, requests } = authorAnswering(JSON.stringify(NOTES))
+    const { author, reporter, requests } = authorAnswering(JSON.stringify(NOTES))
     await author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'))
+    assert.deepEqual(reporter.infos, ['The model read 1 tokens and wrote 1, and stopped with end_turn'])
     assert.equal(requests[0].model, 'claude-haiku-5-5')
     assert.equal((requests[0].output_config as { effort: string }).effort, 'medium')
   })

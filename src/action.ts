@@ -22,7 +22,7 @@ const reporter: Reporter = {
 export async function runAction(fetchImplementation?: typeof fetch): Promise<void> {
   const repository = core.getInput('repository', { required: true })
   const token = core.getInput('token', { required: true })
-  const author = new ClaudeNotesAuthor(new Anthropic({ apiKey: core.getInput('anthropic-api-key', { required: true }), fetch: fetchImplementation }))
+  const author = new ClaudeNotesAuthor(new Anthropic({ apiKey: core.getInput('anthropic-api-key', { required: true }), fetch: fetchImplementation }), reporter)
   const octokit = new Octokit({
     auth: token,
     log: { debug() {}, error() {}, info() {}, warn() {} },
@@ -39,7 +39,7 @@ export async function runAction(fetchImplementation?: typeof fetch): Promise<voi
     return
   }
 
-  const actualPublisher = new GitHubReleasePublisher(octokit, repository)
+  const actualPublisher = new GitHubReleasePublisher(octokit, repository, reporter)
   const publisher: ReleasePublisher = core.getBooleanInput('dry-run') ?
       new DryRunReleasePublisher(actualPublisher, reporter) :
     actualPublisher

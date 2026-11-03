@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 
 import { GitHubReleasePublisher } from '../src/infrastructure/github-release-publisher.ts'
 import { GitHubRepositoryReader } from '../src/infrastructure/github-repository-reader.ts'
+import { RecordingReporter } from './support.ts'
 
 interface RecordedRequest {
   body: unknown
@@ -61,7 +62,9 @@ describe('GitHubReleasePublisher', () => {
   it('commits on top of the target, opens the branch and the pull request', async () => {
     const { octokit, requests } = gitHubStub((request) =>
       creatingGitObjects(request) ?? (request.path.endsWith('/pulls') ? { data: PULL_REQUEST, status: 201 } : { data: {}, status: 201 }))
-    const pullRequest = await new GitHubReleasePublisher(octokit, 'o/r').writePullRequest(DRAFT, undefined)
+    const reporter = new RecordingReporter()
+    const pullRequest = await new GitHubReleasePublisher(octokit, 'o/r', reporter).writePullRequest(DRAFT, undefined)
+    assert.deepEqual(reporter.infos, ['Opened https://github.test/pull/7, "chore(main): release 1.1.0", changing version'])
 
     assert.deepEqual(requests.map((request) => `${request.method} ${request.path}`), [
       'POST /repos/o/r/git/trees',
@@ -86,7 +89,7 @@ describe('GitHubReleasePublisher', () => {
       }
       return creatingGitObjects(request) ?? { data: PULL_REQUEST, status: 201 }
     })
-    await new GitHubReleasePublisher(octokit, 'o/r').writePullRequest(DRAFT, undefined)
+    await new GitHubReleasePublisher(octokit, 'o/r', new RecordingReporter()).writePullRequest(DRAFT, undefined)
     const update = requests.find((request) => request.method === 'PATCH')
     assert.equal(update?.path, '/repos/o/r/git/refs/heads%2Frelease%2Fmain')
     assert.deepEqual(update?.body, { force: true, sha: 'commit' })
@@ -95,13 +98,15 @@ describe('GitHubReleasePublisher', () => {
   it('fails on any other refusal to create the branch', async () => {
     const { octokit } = gitHubStub((request) =>
       request.path.endsWith('/git/refs') ? { data: { message: 'no' }, status: 403 } : creatingGitObjects(request))
-    await assert.rejects(new GitHubReleasePublisher(octokit, 'o/r').writePullRequest(DRAFT, undefined))
+    await assert.rejects(new GitHubReleasePublisher(octokit, 'o/r', new RecordingReporter()).writePullRequest(DRAFT, undefined))
   })
 
   it('updates what is open', async () => {
     const { octokit, requests } = gitHubStub((request) => creatingGitObjects(request) ?? { data: PULL_REQUEST })
     const open = { body: 'old', mergeCommitSha: null, number: 7, url: 'u' }
-    await new GitHubReleasePublisher(octokit, 'o/r').writePullRequest(DRAFT, open)
+    const reporter = new RecordingReporter()
+    await new GitHubReleasePublisher(octokit, 'o/r', reporter).writePullRequest(DRAFT, open)
+    assert.match(reporter.infos[0], /^Updated https:\/\/github\.test\/pull\/7,/)
     assert.deepEqual(requests.slice(2).map((request) => `${request.method} ${request.path}`), [
       'PATCH /repos/o/r/git/refs/heads%2Frelease%2Fmain',
       'PATCH /repos/o/r/pulls/7',
@@ -116,7 +121,7 @@ describe('GitHubReleasePublisher', () => {
         { ...PULL_REQUEST, merge_commit_sha: 'new', merged_at: '2026-02-01T00:00:00Z', number: 3 },
       ],
     }))
-    const merged = await new GitHubReleasePublisher(octokit, 'o/r').findLatestMergedPullRequest('main')
+    const merged = await new GitHubReleasePublisher(octokit, 'o/r', new RecordingReporter()).findLatestMergedPullRequest('main')
     assert.equal(merged?.number, 3)
     assert.equal(merged?.mergeCommitSha, 'new')
     assert.match(requests[0].path, /head=o%3Arelease%2Fmain/)
@@ -125,20 +130,22 @@ describe('GitHubReleasePublisher', () => {
 
   it('finds what is open, and nothing when there is nothing', async () => {
     const empty = gitHubStub(() => ({ data: [] }))
-    assert.equal(await new GitHubReleasePublisher(empty.octokit, 'o/r').findOpenPullRequest('main'), undefined)
+    assert.equal(await new GitHubReleasePublisher(empty.octokit, 'o/r', new RecordingReporter()).findOpenPullRequest('main'), undefined)
     const open = gitHubStub(() => ({ data: [PULL_REQUEST] }))
-    assert.equal((await new GitHubReleasePublisher(open.octokit, 'o/r').findOpenPullRequest('main'))?.number, 7)
+    assert.equal((await new GitHubReleasePublisher(open.octokit, 'o/r', new RecordingReporter()).findOpenPullRequest('main'))?.number, 7)
   })
 
   it('creates the release at the merged commit', async () => {
     const { octokit, requests } = gitHubStub(() => ({ data: {}, status: 201 }))
-    await new GitHubReleasePublisher(octokit, 'o/r').createRelease({ body: 'notes', tag: 'v1.1.0', targetSha: 'merged' })
+    await new GitHubReleasePublisher(octokit, 'o/r', new RecordingReporter()).createRelease({ body: 'notes', tag: 'v1.1.0', targetSha: 'merged' })
     assert.deepEqual(requests[0].body, { body: 'notes', name: 'v1.1.0', tag_name: 'v1.1.0', target_commitish: 'merged' })
   })
 
   it('closes the pull request and removes its branch', async () => {
     const { octokit, requests } = gitHubStub((request) => request.method === 'DELETE' ? { status: 204 } : { data: {} })
-    await new GitHubReleasePublisher(octokit, 'o/r').closePullRequest({ body: '', mergeCommitSha: null, number: 7, url: '' }, 'main')
+    const reporter = new RecordingReporter()
+    await new GitHubReleasePublisher(octokit, 'o/r', reporter).closePullRequest({ body: '', mergeCommitSha: null, number: 7, url: 'u' }, 'main')
+    assert.deepEqual(reporter.infos, ['Closed u, since there is nothing left to release'])
     assert.deepEqual(requests.map((request) => `${request.method} ${request.path}`), [
       'PATCH /repos/o/r/pulls/7',
       'DELETE /repos/o/r/git/refs/heads%2Frelease%2Fmain',

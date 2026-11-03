@@ -43,8 +43,10 @@ export class PrepareReleasePullRequest {
     const open = await publisher.findOpenPullRequest(branch)
 
     if (!plan) {
+      reporter.info(`Nothing to release on ${branch}: no conventional commit since the last release`)
       return this.withdraw(open, branch)
     }
+    reporter.info(`Next version: ${plan.version}, from ${counted(plan.commits.length, 'commit')} on ${branch} since ${plan.previousTag ?? 'its first commit'}`)
     await this.assertVersionIsNew(plan, branch, configuration.initialVersion)
 
     const fingerprint = notesFingerprint({
@@ -59,9 +61,11 @@ export class PrepareReleasePullRequest {
     }
 
     const source = await collectReleaseSource(reader, plan.commits, configuration)
+    reporter.info(`Writing the notes with ${configuration.model}, at ${configuration.effort} effort`)
     const written = await author.write(source, configuration)
     const notes = composedNotes(written, source, configuration)
     if (written.entries.length === 0) {
+      reporter.info('Nothing in these commits matters to those who use the project, so no release pull request opens')
       return this.withdraw(open, branch)
     }
     const heading = releaseHeading(reader.repository, plan, this.collaborators.clock())
@@ -124,13 +128,15 @@ export class PrepareReleasePullRequest {
   }
 
   private async withdraw(open: ReleasePullRequest | undefined, branch: string): Promise<undefined> {
-    const { publisher, reporter } = this.collaborators
     if (open) {
-      await publisher.closePullRequest(open, branch)
-      reporter.info(`Closed ${open.url}, since there is nothing left to release`)
+      await this.collaborators.publisher.closePullRequest(open, branch)
     }
     return undefined
   }
+}
+
+function counted(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`
 }
 
 function isPattern(file: VersionFile): file is PatternVersionFile {
