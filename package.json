@@ -1,6 +1,6 @@
 {
   "name": "release-autopilot",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Semantic releases with notes written for the people who use the project.",
   "type": "module",
