@@ -26,6 +26,11 @@ const BUILT_IN_TEXTS: Record<string, BuiltInTexts> = {
   },
 }
 
+export function builtInLanguageOf(language: string): string | undefined {
+  return [language, new Intl.Locale(language).language].find((tag) => tag in BUILT_IN_TEXTS)
+}
+
 export function builtInTextsOf(language: string): BuiltInTexts | undefined {
-  return BUILT_IN_TEXTS[language] ?? BUILT_IN_TEXTS[new Intl.Locale(language).language]
+  const builtInLanguage = builtInLanguageOf(language)
+  return builtInLanguage ? BUILT_IN_TEXTS[builtInLanguage] : undefined
 }

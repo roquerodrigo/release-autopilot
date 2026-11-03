@@ -2,13 +2,14 @@ import { parse as parseYaml, YAMLError } from 'yaml'
 
 import { ChangelogTarget } from './changelog-target.ts'
 import { isFilledText, isRecord } from './configuration-values.ts'
-import { builtInTextsOf } from './default-texts.ts'
+import { builtInLanguageOf, builtInTextsOf } from './default-texts.ts'
 import { InvalidConfigurationError } from './errors.ts'
 import { declaredVersionFile, type VersionFile } from './version-file.ts'
 
 export const CONFIGURATION_PATH = '.release-autopilot.yml'
 const DEFAULT_CHANGELOG_PATH = 'CHANGELOG.md'
 const DEFAULT_EFFORT = 'medium'
+const DEFAULT_LANGUAGE = 'en'
 const DEFAULT_MODEL = 'claude-haiku-5-5'
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const
 const KNOWN_FIELDS = new Set([
@@ -82,8 +83,10 @@ export class ProjectConfiguration {
 
 export function languageDeclaredBy(hacsManifest: string | undefined): string {
   const country = hacsManifest ? (JSON.parse(hacsManifest) as { country?: unknown }).country : undefined
-  const isBrazil = country === 'BR' || (Array.isArray(country) && country.length === 1 && country[0] === 'BR')
-  return isBrazil ? 'pt-BR' : 'en'
+  const countries: unknown[] = Array.isArray(country) ? country : [country]
+  const languages = new Set(countries.map(languageSpokenIn))
+  const [language] = languages
+  return languages.size === 1 && language ? language : DEFAULT_LANGUAGE
 }
 
 function assertConsistent(primary: ChangelogTarget, translations: ChangelogTarget[]): void {
@@ -156,6 +159,18 @@ function initialVersionOf(value: unknown): string | undefined {
     throw new InvalidConfigurationError('initial_version is not a version')
   }
   return value
+}
+
+function languageSpokenIn(country: unknown): string | undefined {
+  if (typeof country !== 'string') {
+    return undefined
+  }
+  try {
+    const locale = new Intl.Locale('und', { region: country }).maximize()
+    return builtInLanguageOf(`${locale.language}-${locale.region}`)
+  } catch {
+    return undefined
+  }
 }
 
 function listOf(value: unknown, name: string): unknown[] {

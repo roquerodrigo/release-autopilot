@@ -135,8 +135,9 @@ linking to the sponsors page of the owner of the repository. `support: false` le
 out and a text replaces it. That section stays out of the changelogs, where it would
 repeat for every version.
 
-The notes are in pt-BR when `hacs.json` declares `"country": ["BR"]`, and in English
-otherwise.
+The notes are in the language spoken in the countries that `hacs.json` declares, such
+as pt-BR for `"country": ["BR"]`, when they all share one with built-in texts, and in
+English otherwise.
 
 ## Configuration
 

@@ -53,10 +53,19 @@ describe('ProjectConfiguration', () => {
     assert.deepEqual(english('# nothing yet\n').languages, ['en'])
   })
 
-  it('takes the language from the Brazilian HACS manifest', () => {
+  it('takes the language spoken in the countries of the HACS manifest', () => {
     assert.equal(languageDeclaredBy('{"country": ["BR"]}'), 'pt-BR')
     assert.equal(languageDeclaredBy('{"country": "BR"}'), 'pt-BR')
+    assert.equal(languageDeclaredBy('{"country": ["US", "GB"]}'), 'en')
+  })
+
+  it('writes in English when the HACS manifest names no language it knows', () => {
     assert.equal(languageDeclaredBy('{"country": ["BR", "PT"]}'), 'en')
+    assert.equal(languageDeclaredBy('{"country": ["DE"]}'), 'en')
+    assert.equal(languageDeclaredBy('{"country": ["Brazil"]}'), 'en')
+    assert.equal(languageDeclaredBy('{"country": [3]}'), 'en')
+    assert.equal(languageDeclaredBy('{"country": []}'), 'en')
+    assert.equal(languageDeclaredBy('{}'), 'en')
     assert.equal(languageDeclaredBy(undefined), 'en')
   })
 
