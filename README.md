@@ -48,7 +48,8 @@ jobs:
 ```
 
 No file is required in the repository. `@v1` follows every 1.x release, and a breaking
-change only arrives with a new major version, such as `@v2`. To stay on one version,
+change only arrives with a new major version, such as `@v2`. `@latest` follows every
+release, breaking ones included. To stay on one version,
 use the tag of a [release](https://github.com/roquerodrigo/release-autopilot/releases),
 such as `@v1.1.0`, or its commit. The workflow is a thin wrapper around the action and
 runs the action at its own commit, so pinning the workflow pins both. The action can
