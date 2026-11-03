@@ -95,6 +95,11 @@ initial_version: 0.1.0
     assert.deepEqual(Object.keys(configuration.primary.sectionTitles), ['breaking', 'balance'])
   })
 
+  it('writes each language tag in its canonical form', () => {
+    assert.equal(english('changelogs:\n  - language: PT-br\n').primary.language, 'pt-BR')
+    invalid('changelogs:\n  - language: en\n  - language: EN\n    path: b.md\n')
+  })
+
   it('reads several changelogs and fills in the path of the first', () => {
     const configuration = english(`
 changelogs:
@@ -155,6 +160,9 @@ version_files:
     invalid('changelogs: []')
     invalid('language: en\nchangelogs:\n  - language: pt-BR\n')
     invalid('changelogs:\n  - language: e n\n')
+    invalid('changelogs:\n  - language: en_US\n')
+    invalid('changelogs:\n  - language: 3\n')
+    invalid('changelogs:\n  - {}\n')
     invalid('changelogs:\n  - language: en\n    other: 1\n')
     invalid('changelogs:\n  - language: en\n    no_user_facing_changes: Nada\n')
     invalid('changelogs:\n  - language: en\n    support: false\n')

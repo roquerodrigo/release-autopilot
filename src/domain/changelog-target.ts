@@ -3,7 +3,6 @@ import { BREAKING_SECTION, DEFAULT_SECTION_TITLES } from './default-texts.ts'
 import { InvalidConfigurationError } from './errors.ts'
 
 const KNOWN_FIELDS = new Set(['language', 'path', 'release_path', 'sections'])
-const LANGUAGE_TAG = /^[A-Za-z]{2,3}(-[A-Za-z0-9]+)*$/
 const RELEASE_PATH_VERSION = '{version}'
 
 export class ChangelogTarget {
@@ -32,10 +31,7 @@ export class ChangelogTarget {
     if (unknownFields.length > 0) {
       throw new InvalidConfigurationError(`unknown changelog fields: ${unknownFields.join(', ')}`)
     }
-    const language = declared.language
-    if (typeof language !== 'string' || !LANGUAGE_TAG.test(language)) {
-      throw new InvalidConfigurationError('language is not a language tag')
-    }
+    const language = languageTagOf(declared.language)
     return new ChangelogTarget({
       language,
       path: relativePathOf(declared.path ?? ''),
@@ -51,6 +47,22 @@ export class ChangelogTarget {
   withPathWhenMissing(path: string): ChangelogTarget {
     return this.path ? this : new ChangelogTarget({ ...this, path })
   }
+}
+
+function canonicalTagOf(tag: string): string | undefined {
+  try {
+    return Intl.getCanonicalLocales(tag)[0]
+  } catch {
+    return undefined
+  }
+}
+
+function languageTagOf(declared: unknown): string {
+  const language = typeof declared === 'string' ? canonicalTagOf(declared) : undefined
+  if (!language) {
+    throw new InvalidConfigurationError('language is not a language tag')
+  }
+  return language
 }
 
 function relativePathOf(path: unknown): string {
