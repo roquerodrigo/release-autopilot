@@ -2,6 +2,7 @@
 
 [![Marketplace](https://img.shields.io/badge/Marketplace-Release%20Autopilot-2088ff?logo=githubactions&logoColor=white&style=for-the-badge)](https://github.com/marketplace/actions/release-autopilot)
 [![Release](https://img.shields.io/github/v/release/roquerodrigo/release-autopilot?style=for-the-badge)](https://github.com/roquerodrigo/release-autopilot/releases/latest)
+[![npm](https://img.shields.io/npm/v/release-autopilot?logo=npm&style=for-the-badge)](https://www.npmjs.com/package/release-autopilot)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-db61a2?logo=githubsponsors&logoColor=white&style=for-the-badge)](https://github.com/sponsors/roquerodrigo)
 
 Semantic releases with notes written for the people who use the project, not a list
@@ -79,6 +80,46 @@ a release pull request opened with it runs no checks.
 without changing anything. Nothing counts as published, so `released` stays `"false"`.
 `preview-previous-tag` and `preview-release-tag` write the notes of a past release to
 the job summary, to judge a prompt by what it produces.
+
+### Outside GitHub Actions
+
+The same release runs from any CI or terminal with the
+[npm package](https://www.npmjs.com/package/release-autopilot), on Node 24 or later:
+
+```sh
+GITHUB_TOKEN=... ANTHROPIC_API_KEY=... npx release-autopilot --repository owner/name
+```
+
+It prints the outcome as JSON, and its progress to the standard error:
+
+```json
+{"pullRequest":"https://github.com/owner/name/pull/7","released":false,"tag":null,"version":null}
+```
+
+| Option                         | Meaning                                                   |
+| ------------------------------ | --------------------------------------------------------- |
+| `--repository <owner/name>`    | The repository to release. Defaults to `GITHUB_REPOSITORY` |
+| `--dry-run`                    | The same as `dry-run: true`                               |
+| `--preview-previous-tag <tag>` | With `--preview-release-tag`, prints the notes of a past release |
+| `--preview-release-tag <tag>`  | The tag of the past release to preview                    |
+
+The token comes from `GITHUB_TOKEN`, or `GH_TOKEN`, and the key from
+`ANTHROPIC_API_KEY`. The package also exports the release as a library:
+
+```ts
+import { ReleaseAutopilot } from 'release-autopilot'
+
+const autopilot = new ReleaseAutopilot({
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY!,
+  repository: 'owner/name',
+  token: process.env.GITHUB_TOKEN!,
+})
+const { published, pullRequest } = await autopilot.release()
+```
+
+`dryRun: true` changes nothing, `previewPastRelease(previousTag, releaseTag)` returns
+the notes of a past release, and a `reporter` with `info` and `warning` receives the
+progress, which otherwise goes to the console.
 
 ## What it does
 
