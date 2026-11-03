@@ -118,6 +118,11 @@ changelogs:
     invalid(spanish)
     assert.equal(english(`support: false\n${spanish}`).supportSection('owner/project'), undefined)
     assert.equal(english(`support: Apoya en {url}\n${spanish}`).supportSection('owner/project'), 'Apoya en https://github.com/sponsors/owner')
+    invalid('language: es\n')
+    invalid('support: false\nlanguage: es\nsections:\n  added: Novedades\n')
+    const single = english('support: false\nlanguage: es\nsections:\n  breaking: Rotura\n  added: Novedades\n')
+    assert.deepEqual(single.primary.sectionTitles, { added: 'Novedades', breaking: 'Rotura' })
+    assert.equal(single.primary.path, 'CHANGELOG.md')
   })
 
   it('invites sponsorship unless told otherwise', () => {

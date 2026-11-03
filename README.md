@@ -144,7 +144,8 @@ Everything goes in an optional `.release-autopilot.yml` at the root of the repos
 read from the commit being released. Every field can be left out:
 
 ```yaml
-# The language of the notes, "en" or "pt-BR".
+# The language of the notes, as a tag such as "en", "pt-BR" or "es". A language other
+# than "en" and "pt-BR" declares its `sections`, and `support` as a text or `false`.
 language: pt-BR
 
 # Replaces the guidance on what to write and how, which by default is

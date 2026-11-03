@@ -2,7 +2,7 @@ import { parse as parseYaml, YAMLError } from 'yaml'
 
 import { ChangelogTarget } from './changelog-target.ts'
 import { isFilledText, isRecord } from './configuration-values.ts'
-import { DEFAULT_SECTION_TITLES, DEFAULT_SUPPORT_SECTIONS } from './default-texts.ts'
+import { DEFAULT_SUPPORT_SECTIONS } from './default-texts.ts'
 import { InvalidConfigurationError } from './errors.ts'
 import { declaredVersionFile, type VersionFile } from './version-file.ts'
 
@@ -110,9 +110,15 @@ function booleanOf(value: unknown, name: string): boolean {
 }
 
 function changelogsOf(declared: Record<string, unknown>, defaultLanguage: string): ChangelogTarget[] {
-  if (declared.changelogs === undefined) {
-    return [singleChangelog(declared, defaultLanguage)]
-  }
+  const entries = declared.changelogs === undefined ?
+      [{ language: declared.language ?? defaultLanguage, sections: declared.sections }] :
+      declaredChangelogs(declared)
+  const [primary, ...translations] = entries.map((entry) => ChangelogTarget.declaredBy(entry))
+  assertConsistent(primary, translations)
+  return [primary.withPathWhenMissing(DEFAULT_CHANGELOG_PATH), ...translations]
+}
+
+function declaredChangelogs(declared: Record<string, unknown>): unknown[] {
   if (declared.language !== undefined || declared.sections !== undefined) {
     throw new InvalidConfigurationError('language and sections belong inside each changelog')
   }
@@ -120,9 +126,7 @@ function changelogsOf(declared: Record<string, unknown>, defaultLanguage: string
   if (entries.length === 0) {
     throw new InvalidConfigurationError('changelogs is empty')
   }
-  const [primary, ...translations] = entries.map((entry) => ChangelogTarget.declaredBy(entry))
-  assertConsistent(primary, translations)
-  return [primary.withPathWhenMissing(DEFAULT_CHANGELOG_PATH), ...translations]
+  return entries
 }
 
 function documentOf(text: string): unknown {
@@ -187,14 +191,6 @@ function promptOf(value: unknown): string {
     throw new InvalidConfigurationError('prompt is not text')
   }
   return (value ?? '').trim()
-}
-
-function singleChangelog(declared: Record<string, unknown>, defaultLanguage: string): ChangelogTarget {
-  const language = declared.language ?? defaultLanguage
-  if (typeof language !== 'string' || !(language in DEFAULT_SECTION_TITLES)) {
-    throw new InvalidConfigurationError(`language must be one of: ${Object.keys(DEFAULT_SECTION_TITLES).join(', ')}`)
-  }
-  return ChangelogTarget.declaredBy({ language, sections: declared.sections ?? {} }).withPathWhenMissing(DEFAULT_CHANGELOG_PATH)
 }
 
 function supportOf(declared: unknown, language: string): string | undefined {
