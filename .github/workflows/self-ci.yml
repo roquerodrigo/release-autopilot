@@ -23,8 +23,11 @@ jobs:
       contents: read
     uses: roquerodrigo/workflows/.github/workflows/node-test.yml@main
 
+  # Only a release pull request carries the bundle, which Release bundle commits to it.
+  # Elsewhere the job is skipped, which a required check takes as passing.
   bundle:
     name: Bundle is current
+    if: github.head_ref == 'release/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -45,6 +48,13 @@ jobs:
 
       - name: Compare with the committed bundle
         run: git diff --exit-code -- dist
+
+  package:
+    permissions:
+      contents: read
+    uses: roquerodrigo/workflows/.github/workflows/node-build.yml@main
+    with:
+      script: build:package
 
   actionlint:
     name: Actionlint

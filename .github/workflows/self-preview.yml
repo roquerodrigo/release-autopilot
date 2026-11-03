@@ -1,9 +1,10 @@
 name: Notes preview
 
 # Writes the notes of past releases with the code under review and prints them to the
-# job summary, so a change to the prompt is judged by the text it produces. Nothing is
-# written to those repositories, and each run spends API credit, hence the path filter.
-# A pull request without access to the secret skips the call.
+# job summary, so a change to the prompt is judged by the text it produces. The code is
+# built first, since dist/ only changes in a release. Nothing is written to those
+# repositories, and each run spends API credit, hence the path filter. A pull request
+# without access to the secret skips the call.
 
 on:
   pull_request:
@@ -53,6 +54,16 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Set up Node
+        if: steps.credentials.outputs.available == 'true'
+        uses: roquerodrigo/workflows/actions/setup-node@main
+        with:
+          node-version: "24"
+
+      - name: Build the code under review
+        if: steps.credentials.outputs.available == 'true'
+        run: npm run build
 
       - name: Write the notes
         if: steps.credentials.outputs.available == 'true'

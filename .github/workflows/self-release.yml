@@ -18,6 +18,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,3 +53,16 @@ jobs:
             fi
             echo "$moving_tag now points at $TAG ($sha)."
           done
+
+  # Trusted publishing: npm takes the OIDC token of this workflow, self-release.yml, in
+  # the npm environment, so no registry token is stored here.
+  publish:
+    name: npm
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: roquerodrigo/workflows/.github/workflows/publish-npm.yml@main
+    with:
+      ref: ${{ needs.release.outputs.tag }}

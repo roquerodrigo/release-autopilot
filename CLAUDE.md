@@ -13,7 +13,11 @@ major version.
   `PrepareReleasePullRequest`, behind the ports in `ports.ts`.
 - `src/infrastructure`: the adapters. GitHub, Claude and the planner. The default prompt
   is `default-notes-prompt.md`, generic for any project and embedded in the bundle.
-- `src/action.ts`: reads the inputs and wires everything. `src/main.ts` only runs it.
+- `src/release-autopilot.ts`: wires everything behind `ReleaseAutopilot`, the public API
+  of the npm package (`src/index.ts`).
+- `src/action.ts` reads the inputs of the action and `src/cli.ts` the arguments of the
+  command line, and both call `ReleaseAutopilot`. `src/main.ts` and `src/bin.ts` only
+  run them.
 
 ## The engine stays hidden
 
@@ -31,6 +35,9 @@ nothing here calls its write paths (`createPullRequests`, `createReleases`).
 - `npx eslint`, `npm test` (type check, tests and coverage). The tests run the real
   adapters against `tests/fake-github.ts` and `tests/fake-claude.ts`; coverage only
   counts files the tests load, so a new adapter needs a test that reaches it.
-- `npm run build`, then commit `dist/`. The action runs the bundle, and CI fails when it
-  is stale.
+- Never commit `dist/`. The action runs the bundle at its tag, and only the release pull
+  request carries it: `self-bundle.yml` builds it there, and CI fails a release pull
+  request whose bundle is stale.
+- `npm run build:package` builds the npm package into `lib/`. `self-release.yml`
+  publishes it at each release through trusted publishing.
 - `eslint --fix` sorts object keys: never rely on the order of a literal's keys.
