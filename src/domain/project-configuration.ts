@@ -2,7 +2,7 @@ import { parse as parseYaml, YAMLError } from 'yaml'
 
 import { ChangelogTarget } from './changelog-target.ts'
 import { isFilledText, isRecord } from './configuration-values.ts'
-import { DEFAULT_SUPPORT_SECTIONS } from './default-texts.ts'
+import { builtInTextsOf } from './default-texts.ts'
 import { InvalidConfigurationError } from './errors.ts'
 import { declaredVersionFile, type VersionFile } from './version-file.ts'
 
@@ -200,7 +200,7 @@ function supportOf(declared: unknown, language: string): string | undefined {
   if (declared !== undefined && declared !== true && !isFilledText(declared)) {
     throw new InvalidConfigurationError('support is not true, false or a text')
   }
-  const text = typeof declared === 'string' ? declared : DEFAULT_SUPPORT_SECTIONS[language]
+  const text = typeof declared === 'string' ? declared : builtInTextsOf(language)?.support
   if (text === undefined) {
     throw new InvalidConfigurationError(`${language} has no built-in support section, so support must be a text or false`)
   }

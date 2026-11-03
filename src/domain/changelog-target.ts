@@ -1,5 +1,5 @@
 import { isFilledText, isRecord } from './configuration-values.ts'
-import { BREAKING_SECTION, DEFAULT_SECTION_TITLES } from './default-texts.ts'
+import { BREAKING_SECTION, builtInTextsOf } from './default-texts.ts'
 import { InvalidConfigurationError } from './errors.ts'
 
 const KNOWN_FIELDS = new Set(['language', 'path', 'release_path', 'sections'])
@@ -88,7 +88,7 @@ function sectionTitlesOf(declared: unknown, language: string): Record<string, st
     throw new InvalidConfigurationError('sections does not map each section to its title')
   }
   const titles = declared as Record<string, string>
-  const defaults = DEFAULT_SECTION_TITLES[language]
+  const defaults = builtInTextsOf(language)?.sections
   if (Object.keys(titles).length === 0) {
     if (!defaults) {
       throw new InvalidConfigurationError(`${language} has no built-in sections, so it must declare them`)
