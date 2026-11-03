@@ -3,7 +3,7 @@ import type { ReleaseSource } from '../domain/release-source.ts'
 
 import DEFAULT_PROMPT from './default-notes-prompt.md'
 
-const LANGUAGE_NAMES: Record<string, string> = { 'en': 'English', 'pt-BR': 'Brazilian Portuguese' }
+const LANGUAGE_NAMES = new Intl.DisplayNames('en', { type: 'language' })
 
 const NO_MARKUP_RULE = `\
 - No Markdown, links, URLs, images, HTML, @mentions, commit hashes or pull request numbers in the text. List the numbers of the pull requests behind an entry in its \`pull_requests\` field.
@@ -74,7 +74,7 @@ ${sections}
 
 export function userMessage(source: ReleaseSource, configuration: ProjectConfiguration): string {
   const languages = configuration.languages
-    .map((language) => `\`${language}\` (${LANGUAGE_NAMES[language] ?? language})`)
+    .map((language) => `\`${language}\` (${LANGUAGE_NAMES.of(language)})`)
     .join(', ')
   const texts = configuration.title ? '`title`, `summary`' : '`summary`'
   return `Write ${texts} and every \`text\` once for each of these languages, keyed by its tag, saying the same thing in each: ${languages}.

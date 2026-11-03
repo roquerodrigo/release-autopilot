@@ -64,7 +64,7 @@ describe('userMessage', () => {
 
   it('names each language and carries the data', () => {
     const message = userMessage(source, english('changelogs:\n  - language: pt-BR\n  - language: es\n    path: b.md\n    sections:\n      breaking: Rotura\n      added: Novedades\n      changed: Mejoras\n      fixed: Correcciones\n'))
-    assert.match(message, /`pt-BR` \(Brazilian Portuguese\), `es` \(es\)/)
+    assert.match(message, /`pt-BR` \(Brazilian Portuguese\), `es` \(Spanish\)/)
     assert.match(message, /<release_data>\n\{"commits":\[\],"repository":"owner\/project"\}\n<\/release_data>/)
   })
 
