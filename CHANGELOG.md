@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.3.0...v1.4.0) (2026-11-03)
+
+Release Autopilot is now published on npm with a command line and a library, so releases can run outside GitHub Actions.
+
+### New features
+
+- The release can now run outside GitHub Actions through the release-autopilot npm package and its npx command, which prints its outcome as JSON. ([#16](https://github.com/roquerodrigo/release-autopilot/pull/16))
+- The package also exports a ReleaseAutopilot class, so the release can be run from code with the same behaviour as the action. ([#16](https://github.com/roquerodrigo/release-autopilot/pull/16))
+
 ## [1.3.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.2.0...v1.3.0) (2026-11-03)
 
 Release notes can now be written in any language tag, with regional variants of English using the built-in English texts.
