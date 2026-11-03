@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.2](https://github.com/roquerodrigo/release-autopilot/compare/v1.1.1...v1.1.2) (2026-11-03)
+
+### New features
+
+- A latest tag now follows every release, including those with a new major version, so it always points at the newest version. ([#9](https://github.com/roquerodrigo/release-autopilot/pull/9))
+
+### Bug fixes
+
+- Release notes that name a reference such as latest no longer block the release with an error about a mention. ([#10](https://github.com/roquerodrigo/release-autopilot/pull/10))
+
 ## [1.1.1](https://github.com/roquerodrigo/release-autopilot/compare/v1.1.0...v1.1.1) (2026-11-03)
 
 ### Improvements
