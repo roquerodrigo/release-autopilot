@@ -2,8 +2,9 @@
 
 GitHub Action that cuts semantic releases with notes written by Claude. `README.md` is
 the public contract: inputs, outputs and `.release-autopilot.yml`. Consumers track
-`@main`, so a merge is live everywhere on its next run: treat those names as a public
-contract.
+`@v1`, which `self-release.yml` moves on every release, so a release is live everywhere
+on its next run: treat those names as a public contract, and break them only with a new
+major version.
 
 ## Architecture
 

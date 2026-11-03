@@ -36,7 +36,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    uses: roquerodrigo/release-autopilot/.github/workflows/release.yml@main
+    uses: roquerodrigo/release-autopilot/.github/workflows/release.yml@v1
     secrets:
       token: ${{ secrets.RELEASE_TOKEN }}
       anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -47,15 +47,15 @@ jobs:
     # Publish needs.release.outputs.tag to a registry here.
 ```
 
-No file is required in the repository. `@main` follows every change as soon as it is
-merged; to stay on a version, use the tag of a
-[release](https://github.com/roquerodrigo/release-autopilot/releases), such as
-`@v1.0.0`, or its commit. The workflow is a thin wrapper around the action and runs the
-action at its own commit, so pinning the workflow pins both. The action can also be
-used as a step:
+No file is required in the repository. `@v1` follows every 1.x release, and a breaking
+change only arrives with a new major version, such as `@v2`. To stay on one version,
+use the tag of a [release](https://github.com/roquerodrigo/release-autopilot/releases),
+such as `@v1.1.0`, or its commit. The workflow is a thin wrapper around the action and
+runs the action at its own commit, so pinning the workflow pins both. The action can
+also be used as a step:
 
 ```yaml
-- uses: roquerodrigo/release-autopilot@main
+- uses: roquerodrigo/release-autopilot@v1
   id: release
   with:
     token: ${{ secrets.RELEASE_TOKEN }}
