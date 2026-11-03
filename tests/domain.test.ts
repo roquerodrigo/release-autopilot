@@ -294,7 +294,6 @@ describe('notes', () => {
     const rejected = (notes: ReturnType<typeof writtenNotes>, source = sourceOf(), yaml?: string) =>
       assert.throws(() => textOf(notes, source, yaml), RejectedNotesError)
     rejected(writtenNotes(writtenEntry('added', 'See https://evil.test')))
-    rejected(writtenNotes(writtenEntry('added', 'Thanks @someone')))
     rejected(writtenNotes(writtenEntry('added', '![image](x)')))
     rejected(writtenNotes(writtenEntry('added', '<details>hidden')))
     rejected(writtenNotes(writtenEntry('added', '   ')))
@@ -304,6 +303,15 @@ describe('notes', () => {
     rejected(writtenNotes(writtenEntry('added', 'Text.')), sourceOf({ is_breaking: true }))
     rejected(writtenNotes(), sourceOf({ is_breaking: true }))
     rejected({ ...writtenNotes(writtenEntry('added', 'Text.')), title: { en: '**Bold**' } })
+  })
+
+  it('writes a mention as code, so it notifies nobody', () => {
+    const text = textOf(writtenNotes(writtenEntry('added', 'Use @latest, @scope/package or `@v1`, thanks @someone.')))
+    assert.equal(text, '### New features\n\n- Use `@latest`, `@scope/package` or `@v1`, thanks `@someone`.\n')
+  })
+
+  it('names the markup it rejects', () => {
+    assert.throws(() => textOf(writtenNotes(writtenEntry('added', 'See https://evil.test'))), /HTML: https:\/\//)
   })
 
   it('accepts closed bold and an email-like address', () => {

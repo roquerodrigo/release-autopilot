@@ -7,7 +7,8 @@ import { RejectedNotesError } from './errors.ts'
 import { hasBreakingCommit, knownPullRequests } from './release-source.ts'
 
 const BOLD_MARK = '**'
-const FORBIDDEN_MARKUP = /https?:\/\/|!\[|\]\(|<\s*\/?\s*(details|summary)|(?<![\w.])@[\w-]+/i
+const FORBIDDEN_MARKUP = /https?:\/\/|!\[|\]\(|<\s*\/?\s*(details|summary)/i
+const MENTION = /(?<![\w.`])@[\w-]+(?:\/[\w.-]+)?/g
 
 export interface LocalizedNotes {
   changelog: ChangelogTarget
@@ -45,6 +46,10 @@ function bullet(text: string, pullRequests: readonly number[], repository: strin
   return `- ${text} (${links.join(', ')})`
 }
 
+function publishableLine(text: string): string {
+  return text.split(/\s+/).filter(Boolean).join(' ').replace(MENTION, '`$&`')
+}
+
 function renderedNotes(
   written: WrittenNotes,
   source: ReleaseSource,
@@ -52,20 +57,23 @@ function renderedNotes(
   changelog: ChangelogTarget,
 ): string {
   const language = changelog.language
-  const title = singleLine(written.title?.[language] ?? '')
-  const summary = singleLine(written.summary[language] ?? '')
+  const title = publishableLine(written.title?.[language] ?? '')
+  const summary = publishableLine(written.summary[language] ?? '')
   const known = knownPullRequests(source)
   const entries = written.entries.map((entry) => ({
     category: entry.category,
     pullRequests: entry.pull_requests.filter((number) => known.has(number)),
-    text: singleLine(entry.text[language] ?? ''),
+    text: publishableLine(entry.text[language] ?? ''),
   }))
 
   if (entries.some((entry) => !entry.text || !(entry.category in changelog.sectionTitles))) {
     throw new RejectedNotesError('an entry is empty or has an unknown category')
   }
-  if ([title, summary, ...entries.map((entry) => entry.text)].some((text) => FORBIDDEN_MARKUP.test(text))) {
-    throw new RejectedNotesError('the text carries a link, an image or a mention')
+  const forbidden = [title, summary, ...entries.map((entry) => entry.text)]
+    .map((text) => FORBIDDEN_MARKUP.exec(text)?.[0])
+    .find(Boolean)
+  if (forbidden) {
+    throw new RejectedNotesError(`the text carries a link, an image or HTML: ${forbidden}`)
   }
   if (configuration.title && entries.length > 0 && !title) {
     throw new RejectedNotesError('a release with entries has no title')
@@ -88,8 +96,4 @@ function renderedNotes(
   })
   const blocks = [title && `${BOLD_MARK}${title}${BOLD_MARK}`, summary, ...sections].filter(Boolean)
   return `${blocks.join('\n\n')}\n`
-}
-
-function singleLine(text: string): string {
-  return text.split(/\s+/).filter(Boolean).join(' ')
 }
