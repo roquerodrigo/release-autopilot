@@ -9,8 +9,8 @@ major version.
 ## Architecture
 
 - `src/domain`: pure rules. Commits, configuration, notes, documents. No I/O.
-- `src/application`: the two use cases, `PublishMergedRelease` and
-  `PrepareReleasePullRequest`, behind the ports in `ports.ts`.
+- `src/application`: the three use cases, `PublishMergedRelease`,
+  `PrepareReleasePullRequest` and `PreviewPastRelease`, behind the ports in `ports.ts`.
 - `src/infrastructure`: the adapters. GitHub, Claude and the planner. The default prompt
   is `default-notes-prompt.md`, generic for any project and embedded in the bundle.
 - `src/release-autopilot.ts`: wires everything behind `ReleaseAutopilot`, the public API
