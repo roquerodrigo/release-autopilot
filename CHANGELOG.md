@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.4.0...v1.5.0) (2026-11-14)
+
+### Improvements
+
+- The default model that writes the notes is now claude-sonnet-5-5 instead of claude-haiku-5-5; projects setting model in their configuration are unaffected. ([#22](https://github.com/roquerodrigo/release-autopilot/pull/22))
+
 ## [1.4.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.3.0...v1.4.0) (2026-11-03)
 
 Release Autopilot is now published on npm with a command line and a library, so releases can run outside GitHub Actions.
