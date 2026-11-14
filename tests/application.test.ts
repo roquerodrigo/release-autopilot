@@ -138,7 +138,7 @@ describe('PrepareReleasePullRequest', () => {
     assert.deepEqual(publisher.closed, [])
     assert.deepEqual(reporter.infos, [
       'Next version: 1.1.0, from 1 commit on main since v1.0.0',
-      'Writing the notes with claude-haiku-5-5, at medium effort',
+      'Writing the notes with claude-sonnet-5-5, at medium effort',
       'Nothing in these commits matters to those who use the project, so no release pull request opens',
     ])
   })

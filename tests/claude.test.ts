@@ -39,7 +39,7 @@ describe('ClaudeNotesAuthor', () => {
     const { author, reporter, requests } = authorAnswering(JSON.stringify(NOTES))
     await author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'))
     assert.deepEqual(reporter.infos, ['The model read 1 tokens and wrote 1, and stopped with end_turn'])
-    assert.equal(requests[0].model, 'claude-haiku-5-5')
+    assert.equal(requests[0].model, 'claude-sonnet-5-5')
     assert.equal((requests[0].output_config as { effort: string }).effort, 'medium')
   })
 
