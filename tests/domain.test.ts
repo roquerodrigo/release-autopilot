@@ -91,7 +91,7 @@ initial_version: 0.1.0
   })
 
   it('writes with the default model and effort unless told otherwise', () => {
-    assert.equal(english().model, 'claude-haiku-5-5')
+    assert.equal(english().model, 'claude-sonnet-5-5')
     assert.equal(english().effort, 'medium')
     const configuration = english('model: claude-opus-5-5\neffort: high\n')
     assert.equal(configuration.model, 'claude-opus-5-5')

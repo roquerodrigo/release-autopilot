@@ -10,7 +10,7 @@ export const CONFIGURATION_PATH = '.release-autopilot.yml'
 const DEFAULT_CHANGELOG_PATH = 'CHANGELOG.md'
 const DEFAULT_EFFORT = 'medium'
 const DEFAULT_LANGUAGE = 'en'
-const DEFAULT_MODEL = 'claude-haiku-5-5'
+const DEFAULT_MODEL = 'claude-sonnet-5-5'
 const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const
 const KNOWN_FIELDS = new Set([
   'bold_entries',

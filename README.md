@@ -199,7 +199,7 @@ prompt: |
   You write the patch notes of a game for the people who play it.
 
 # The model that writes the notes, and its effort: low, medium, high, xhigh or max.
-model: claude-haiku-5-5
+model: claude-sonnet-5-5
 effort: medium
 
 # Asks for a title of a few words, written in bold above the text.
