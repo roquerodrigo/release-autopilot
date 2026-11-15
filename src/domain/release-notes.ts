@@ -7,6 +7,7 @@ import { RejectedNotesError } from './errors.ts'
 import { hasBreakingCommit, knownPullRequests } from './release-source.ts'
 
 const BOLD_MARK = '**'
+const CODE_SPAN = /(`+)(?!`)[\s\S]*?(?<!`)\1(?!`)/g
 const FORBIDDEN_MARKUP = /https?:\/\/|!\[|\]\(|<\s*\/?\s*(details|summary)/i
 const MENTION = /(?<![\w.`])@[\w-]+(?:\/[\w.-]+)?/g
 
@@ -70,7 +71,7 @@ function renderedNotes(
     throw new RejectedNotesError('an entry is empty or has an unknown category')
   }
   const forbidden = [title, summary, ...entries.map((entry) => entry.text)]
-    .map((text) => FORBIDDEN_MARKUP.exec(text)?.[0])
+    .map((text) => FORBIDDEN_MARKUP.exec(text.replace(CODE_SPAN, ''))?.[0])
     .find(Boolean)
   if (forbidden) {
     throw new RejectedNotesError(`the text carries a link, an image or HTML: ${forbidden}`)
