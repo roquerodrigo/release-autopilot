@@ -38,18 +38,23 @@ describe('ClaudeNotesAuthor', () => {
   it('falls back to the default model and effort', async () => {
     const { author, reporter, requests } = authorAnswering(JSON.stringify(NOTES))
     await author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'))
-    assert.deepEqual(reporter.infos, ['The model read 1 tokens and wrote 1, and stopped with end_turn'])
+    assert.deepEqual(reporter.infos, [
+      'The model read 1 tokens and wrote 1, and stopped with end_turn',
+      `The model answered: ${JSON.stringify(NOTES)}`,
+    ])
     assert.equal(requests[0].model, 'claude-sonnet-5-5')
     assert.equal((requests[0].output_config as { effort: string }).effort, 'medium')
   })
 
-  it('rejects notes the model did not finish', async () => {
-    const { author } = authorAnswering('{"entries"', 'max_tokens')
+  it('rejects notes the model did not finish, after logging what it wrote', async () => {
+    const { author, reporter } = authorAnswering('{"entries"', 'max_tokens')
     await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en')), RejectedNotesError)
+    assert.equal(reporter.infos.at(-1), 'The model answered: {"entries"')
   })
 
   it('rejects an answer with no text', async () => {
-    const { author } = authorAnswering(undefined)
+    const { author, reporter } = authorAnswering(undefined)
     await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en')), RejectedNotesError)
+    assert.equal(reporter.infos.length, 1)
   })
 })

@@ -32,10 +32,13 @@ export class ClaudeNotesAuthor implements NotesAuthor {
     }).finalMessage()
     const { input_tokens: inputTokens, output_tokens: outputTokens } = response.usage
     this.reporter.info(`The model read ${inputTokens} tokens and wrote ${outputTokens}, and stopped with ${response.stop_reason}`)
+    const text = response.content.find((block) => block.type === 'text')
+    if (text) {
+      this.reporter.info(`The model answered: ${text.text}`)
+    }
     if (response.stop_reason !== 'end_turn') {
       throw new RejectedNotesError(`the model stopped with ${response.stop_reason}`)
     }
-    const text = response.content.find((block) => block.type === 'text')
     if (!text) {
       throw new RejectedNotesError('the model returned no text')
     }
