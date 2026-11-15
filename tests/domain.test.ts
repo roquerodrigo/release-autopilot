@@ -340,6 +340,16 @@ describe('notes', () => {
     assert.equal(text, '### New features\n\n- Use `@latest`, `@scope/package` or `@v1`, thanks `@someone`.\n')
   })
 
+  it('accepts markup that a code span shows as text', () => {
+    const text = textOf(writtenNotes(writtenEntry('added', 'Accepts `tcp://` and ``http://`a`` URLs, or `<details>`.')))
+    assert.equal(text, '### New features\n\n- Accepts `tcp://` and ``http://`a`` URLs, or `<details>`.\n')
+  })
+
+  it('rejects markup outside a code span', () => {
+    assert.throws(() => textOf(writtenNotes(writtenEntry('added', '`code` then https://evil.test'))), RejectedNotesError)
+    assert.throws(() => textOf(writtenNotes(writtenEntry('added', 'An open `span with https://evil.test'))), RejectedNotesError)
+  })
+
   it('names the markup it rejects', () => {
     assert.throws(() => textOf(writtenNotes(writtenEntry('added', 'See https://evil.test'))), /HTML: https:\/\//)
   })

@@ -166,7 +166,8 @@ follows the edit.
 - A failure to write the notes leaves the pull request as it is and fails the run, and
   the next push tries again. There is no fallback text. A release that was already
   merged is still published, and the run then only warns.
-- The model has no tools. Its text is rejected if it carries a link, an image or HTML,
+- The model has no tools. Its text is rejected if it carries a link, an image or HTML
+  outside a code span, where a scheme such as `http://` stays as text,
   or omits a breaking commit, and a mention such as `@latest` is written as code, so it
   notifies nobody. Patches and descriptions from bots never reach it.
 - A pull request left with nothing relevant to release is closed.
