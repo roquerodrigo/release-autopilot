@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.1](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.0...v1.5.1) (2026-11-15)
+
+### Bug fixes
+
+- Release notes that mention a URL scheme such as `http://` as inline code are no longer rejected as containing a link, which made the release fail. ([#24](https://github.com/roquerodrigo/release-autopilot/pull/24))
+
 ## [1.5.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.4.0...v1.5.0) (2026-11-14)
 
 ### Improvements
