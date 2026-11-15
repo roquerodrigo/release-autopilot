@@ -27,6 +27,17 @@ jobs:
         with:
           persist-credentials: false
 
+      # The committed bundle is the one of the last release. Building it from main lets a
+      # fix to the release itself, such as a rule that rejected its own notes, release
+      # itself instead of waiting for a bundle only that release would bring.
+      - name: Set up Node
+        uses: roquerodrigo/workflows/actions/setup-node@main
+        with:
+          node-version: "24"
+
+      - name: Build the bundle
+        run: npm run build
+
       - name: Release
         id: release
         uses: ./ # zizmor: ignore[self-repository]
