@@ -38,6 +38,8 @@ nothing here calls its write paths (`createPullRequests`, `createReleases`).
 - Never commit `dist/`. The action runs the bundle at its tag, and only the release pull
   request carries it: `self-bundle.yml` builds it there, and CI fails a release pull
   request whose bundle is stale.
+- `self-release.yml` releases this repository with a bundle built from main, not the
+  committed one, so a fix to the release logic can release itself.
 - `npm run build:package` builds the npm package into `lib/`. `self-release.yml`
   publishes it at each release through trusted publishing.
 - `eslint --fix` sorts object keys: never rely on the order of a literal's keys.
