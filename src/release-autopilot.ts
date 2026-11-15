@@ -56,7 +56,7 @@ export class ReleaseAutopilot {
   }
 
   previewPastRelease(previousTag: string, releaseTag: string): Promise<string> {
-    return new PreviewPastRelease(this.reader, this.author).run(previousTag, releaseTag)
+    return new PreviewPastRelease(this.reader, this.author, this.reporter).run(previousTag, releaseTag)
   }
 
   async release(): Promise<ReleaseOutcome> {

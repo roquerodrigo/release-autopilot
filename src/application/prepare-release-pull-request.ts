@@ -5,9 +5,9 @@ import type { NotesAuthor, ReleasePlanner, ReleasePublisher, ReleasePullRequest,
 
 import { ReleaseVersionConflictError } from '../domain/errors.ts'
 import { changelogWithEntry, pullRequestBodyOf, stateOfPullRequest } from '../domain/release-documents.ts'
-import { composedNotes } from '../domain/release-notes.ts'
 import { notesFingerprint, pullRequestTitleOf, releaseHeading, tagOf } from '../domain/release-plan.ts'
 import { withNewVersion } from '../domain/version-file.ts'
+import { acceptedNotesOf } from './accepted-notes.ts'
 import { releaseBranchOf } from './ports.ts'
 import { projectSnapshotAt } from './project-snapshot.ts'
 import { collectReleaseSource } from './release-source-collector.ts'
@@ -62,8 +62,7 @@ export class PrepareReleasePullRequest {
 
     const source = await collectReleaseSource(reader, plan.commits, configuration)
     reporter.info(`Writing the notes with ${configuration.model}, at ${configuration.effort} effort`)
-    const written = await author.write(source, configuration)
-    const notes = composedNotes(written, source, configuration)
+    const { notes, written } = await acceptedNotesOf(author, source, configuration, reporter)
     if (written.entries.length === 0) {
       reporter.info('Nothing in these commits matters to those who use the project, so no release pull request opens')
       return this.withdraw(open, branch)

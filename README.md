@@ -170,6 +170,9 @@ follows the edit.
   outside a code span, where a scheme such as `http://` stays as text,
   or omits a breaking commit, and a mention such as `@latest` is written as code, so it
   notifies nobody. Patches and descriptions from bots never reach it.
+- Rejected notes are written again, up to three attempts, and the run fails only when
+  every attempt is rejected. The log shows every answer of the model, and each rejection
+  as a warning with its reason.
 - A pull request left with nothing relevant to release is closed.
 
 By default the release ends with a section that invites sponsorship, in its language,
