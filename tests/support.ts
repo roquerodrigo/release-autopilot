@@ -14,19 +14,20 @@ import type { CommitDetails } from '../src/domain/release-source.ts'
 import { isReleaseTag } from '../src/domain/release-plan.ts'
 
 export class FixedAuthor implements NotesAuthor {
+  readonly answers: readonly (Error | WrittenNotes)[]
   calls = 0
-  readonly notes: Error | WrittenNotes
 
-  constructor(notes: Error | WrittenNotes) {
-    this.notes = notes
+  constructor(...answers: readonly (Error | WrittenNotes)[]) {
+    this.answers = answers
   }
 
   async write(): Promise<WrittenNotes> {
+    const answer = this.answers[Math.min(this.calls, this.answers.length - 1)]
     this.calls += 1
-    if (this.notes instanceof Error) {
-      throw this.notes
+    if (answer instanceof Error) {
+      throw answer
     }
-    return this.notes
+    return answer
   }
 }
 

@@ -87,14 +87,26 @@ describe('PrepareReleasePullRequest', () => {
 
   it('never touches the pull request when the notes cannot be written', async () => {
     publisher.open = { body: 'previous', mergeCommitSha: null, number: 1, url: 'u' }
-    await assert.rejects(prepare(PLAN, new FixedAuthor(new Error('overloaded'))).run('main'), /overloaded/)
+    const author = new FixedAuthor(new Error('overloaded'))
+    await assert.rejects(prepare(PLAN, author).run('main'), /overloaded/)
+    assert.equal(author.calls, 1)
     assert.equal(publisher.written.length, 0)
   })
 
-  it('never touches the pull request when the notes are rejected', async () => {
+  it('never touches the pull request when every attempt at the notes is rejected', async () => {
     const author = new FixedAuthor(writtenNotes(writtenEntry('added', 'See https://evil.test')))
     await assert.rejects(prepare(PLAN, author).run('main'), RejectedNotesError)
+    assert.equal(author.calls, 3)
+    assert.equal(reporter.warnings.length, 2)
     assert.equal(publisher.written.length, 0)
+  })
+
+  it('asks the model again when its notes are rejected', async () => {
+    const author = new FixedAuthor(writtenNotes(writtenEntry('added', '   ')), new RejectedNotesError('the model stopped with refusal'), NOTES)
+    await prepare(PLAN, author).run('main')
+    assert.equal(author.calls, 3)
+    assert.match(reporter.warnings[0], /an entry is empty or has an unknown category, so the model writes them again \(attempt 2 of 3\)/)
+    assert.match(publisher.written[0].body, /- Added a thing\./)
   })
 
   it('neither calls the model nor writes when the notes are still current', async () => {
@@ -346,20 +358,20 @@ describe('PreviewPastRelease', () => {
   it('writes the notes of every commit and changes nothing', async () => {
     const reader = new InMemoryReader()
     reader.compared = [{ message: 'feat: a', sha: 'a' }, { message: 'ci: b', sha: 'b' }]
-    const preview = await new PreviewPastRelease(reader, new FixedAuthor(NOTES)).run('v1.0.0', 'v1.1.0')
+    const preview = await new PreviewPastRelease(reader, new FixedAuthor(NOTES), new RecordingReporter()).run('v1.0.0', 'v1.1.0')
     assert.match(preview, /^# owner\/project \(en\)\n\n### New features\n\n- Added a thing\./)
   })
 
   it('requires a breaking entry for a breaking commit of the past', async () => {
     const reader = new InMemoryReader()
     reader.compared = [{ message: 'feat!: a', sha: 'a' }]
-    await assert.rejects(new PreviewPastRelease(reader, new FixedAuthor(NOTES)).run('v1.0.0', 'v1.1.0'), RejectedNotesError)
+    await assert.rejects(new PreviewPastRelease(reader, new FixedAuthor(NOTES), new RecordingReporter()).run('v1.0.0', 'v1.1.0'), RejectedNotesError)
   })
 })
 
 describe('PreviewPastRelease without anything relevant', () => {
   it('says that no release would open', async () => {
-    const preview = await new PreviewPastRelease(new InMemoryReader(), new FixedAuthor(writtenNotes())).run('v1.0.0', 'v1.1.0')
+    const preview = await new PreviewPastRelease(new InMemoryReader(), new FixedAuthor(writtenNotes()), new RecordingReporter()).run('v1.0.0', 'v1.1.0')
     assert.match(preview, /no release would open/)
   })
 })
