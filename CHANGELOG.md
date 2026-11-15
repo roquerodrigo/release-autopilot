@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.2](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.1...v1.5.2) (2026-11-15)
+
+### Improvements
+
+- The log now shows every answer of the model, including unfinished ones, so a rejected note can be traced to the exact text. ([#27](https://github.com/roquerodrigo/release-autopilot/pull/27))
+
+### Bug fixes
+
+- A run no longer fails at once when the model returns notes that fail validation; the notes are written again up to three times, and each rejection is logged as a warning. ([#27](https://github.com/roquerodrigo/release-autopilot/pull/27))
+
 ## [1.5.1](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.0...v1.5.1) (2026-11-15)
 
 ### Bug fixes
