@@ -58,11 +58,11 @@ export function systemPrompt(configuration: ProjectConfiguration): string {
     .join('\n')
   return `${configuration.prompt || DEFAULT_PROMPT.trim()}
 
-You receive every commit since the last release, whatever its type: messages, pull request titles and descriptions, and patches.
+You receive every commit since the last release, whatever its type, in the order they were made, oldest first: messages, pull request titles and descriptions, and patches.
 
 Rules that always apply:
 - Return no entries when nothing in the data changes anything for those who read these notes: no release is published then.
-- Those who read these notes only know the last release, so whatever was introduced since then is new to them as a whole. Describe it once, as it stands at the end of this release, and fold into its entry every commit that refines, refactors, renames or fixes something introduced by another commit of this release: never a separate entry, never a fix.
+- Those who read these notes only know the last release, so whatever was introduced since then is new to them as a whole, as it stands after the last commit. Before writing about a commit that changes, moves, reorders, renames or fixes something, check whether an earlier commit of this release introduced it. If one did, the later commit has no entry of its own and is never a fix, and neither the title nor the summary presents it as a change: it only shapes the entry of what was introduced.
 - Every commit with \`is_breaking\` set needs a \`breaking\` entry that says what the user has to do, when the data says it.
 ${titleRule}${markupRule}- Never mention how the notes were produced, the tools involved, or anything about the maintainer's environment.
 
