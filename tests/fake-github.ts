@@ -114,7 +114,7 @@ function answerToRead(repository: FakeRepository, path: string, query: URLSearch
     return { data: { commit: { sha: repository.commits[0].sha } } }
   }
   if (path.startsWith('compare/')) {
-    const commits = repository.commits.map(({ message, sha }) => ({ commit: { message }, sha }))
+    const commits = repository.commits.map(({ message, sha }) => ({ commit: { message }, sha })).toReversed()
     return { data: { commits, total_commits: commits.length } }
   }
   if (path.endsWith('/pulls') && path.startsWith('commits/')) {

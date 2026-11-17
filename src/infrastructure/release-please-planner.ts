@@ -19,8 +19,9 @@ const ABSENT_VERSION = '9999.9999.9999'
 
 class CommitCapture {
   previousTag: string | undefined
+  // The engine walks the history newest first, and the notes read commits in the order they were made.
   get commits(): PlannedCommit[] {
-    return this.rawCommits.map(({ sha }) => ({ isBreaking: this.breakingShas.has(sha), sha }))
+    return this.rawCommits.map(({ sha }) => ({ isBreaking: this.breakingShas.has(sha), sha })).toReversed()
   }
 
   private breakingShas = new Set<string>()

@@ -22,7 +22,7 @@ function plan(repository: FakeRepository, versionFiles: StructuredVersionFile[] 
 }
 
 describe('ReleasePleasePlanner', () => {
-  it('hands over every commit since the last tag, once, conventional or not', async () => {
+  it('hands over every commit since the last tag, once and oldest first, conventional or not', async () => {
     const planned = await plan({
       ...LAST_RELEASE,
       commits: [
@@ -36,9 +36,9 @@ describe('ReleasePleasePlanner', () => {
     assert.equal(planned?.version, '1.1.0')
     assert.equal(planned?.previousTag, 'v1.0.0')
     assert.deepEqual(planned?.commits, [
-      { isBreaking: false, sha: 'not-conventional' },
-      { isBreaking: false, sha: 'with-footer' },
       { isBreaking: false, sha: 'feature' },
+      { isBreaking: false, sha: 'with-footer' },
+      { isBreaking: false, sha: 'not-conventional' },
     ])
   })
 
@@ -55,10 +55,10 @@ describe('ReleasePleasePlanner', () => {
     })
     assert.equal(planned?.version, '2.0.0')
     assert.deepEqual(planned?.commits, [
-      { isBreaking: true, sha: 'nested' },
-      { isBreaking: true, sha: 'numbered-footer' },
-      { isBreaking: true, sha: 'marked' },
       { isBreaking: false, sha: 'plain' },
+      { isBreaking: true, sha: 'marked' },
+      { isBreaking: true, sha: 'numbered-footer' },
+      { isBreaking: true, sha: 'nested' },
     ])
   })
 
