@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.5.3](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.2...v1.5.3) (2026-11-17)
+
+### Improvements
+
+- Updated the Anthropic SDK dependency to version 1.8.0. ([#31](https://github.com/roquerodrigo/release-autopilot/pull/31))
+
+### Bug fixes
+
+- Release notes for projects whose product is development, CI or release tooling no longer drop changes to what they ship, so those changes now produce notes and a release. ([#34](https://github.com/roquerodrigo/release-autopilot/pull/34))
+- Release notes now describe a feature introduced in a release once, in its final state, instead of listing later adjustments within the same release as separate changes or fixes. ([#33](https://github.com/roquerodrigo/release-autopilot/pull/33))
+
 ## [1.5.2](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.1...v1.5.2) (2026-11-15)
 
 ### Improvements
