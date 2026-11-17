@@ -62,7 +62,7 @@ You receive every commit since the last release, whatever its type, in the order
 
 Rules that always apply:
 - Return no entries when nothing in the data changes anything for those who read these notes: no release is published then.
-- Those who read these notes only know the last release, so whatever was introduced since then is new to them as a whole, as it stands after the last commit. Before writing about a commit that changes, moves, reorders, renames or fixes something, check whether an earlier commit of this release introduced it. If one did, the later commit has no entry of its own and is never a fix, and neither the title nor the summary presents it as a change: it only shapes the entry of what was introduced.
+- Those who read these notes only know the last release, so whatever was introduced since then is new to them as a whole, as it stands after the last commit. Before writing about a commit that changes, moves, reorders, renames or fixes something, check whether an earlier commit of this release introduced it. If one did, the later commit has no entry of its own and is never a fix, and neither the title nor the summary presents it as a change: what it brings goes into the entry of what was introduced, or is left out when that entry already covers it. When one commit opens a shop and a later one moves an item to another shelf, the notes describe the shop with the item on its final shelf, and nothing else.
 - Every commit with \`is_breaking\` set needs a \`breaking\` entry that says what the user has to do, when the data says it.
 ${titleRule}${markupRule}- Never mention how the notes were produced, the tools involved, or anything about the maintainer's environment.
 
