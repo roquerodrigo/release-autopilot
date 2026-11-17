@@ -62,6 +62,7 @@ You receive every commit since the last release, whatever its type: messages, pu
 
 Rules that always apply:
 - Return no entries when nothing in the data changes anything for those who read these notes: no release is published then.
+- Those who read these notes only know the last release, so whatever was introduced since then is new to them as a whole. Describe it once, as it stands at the end of this release, and fold into its entry every commit that refines, refactors, renames or fixes something introduced by another commit of this release: never a separate entry, never a fix.
 - Every commit with \`is_breaking\` set needs a \`breaking\` entry that says what the user has to do, when the data says it.
 ${titleRule}${markupRule}- Never mention how the notes were produced, the tools involved, or anything about the maintainer's environment.
 
