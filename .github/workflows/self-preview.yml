@@ -39,6 +39,9 @@ jobs:
           - repository: roquerodrigo/ha-enel-sp
             previous-tag: v1.0.0
             release-tag: v1.1.0
+          - repository: roquerodrigo/release-autopilot
+            previous-tag: v1.5.1
+            release-tag: v1.5.2
     steps:
       - name: Check for the API key
         id: credentials
