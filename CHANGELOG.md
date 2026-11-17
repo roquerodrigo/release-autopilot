@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.4](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.3...v1.5.4) (2026-11-17)
+
+### Bug fixes
+
+- Release notes no longer list adjustments to a feature introduced in the same release as separate changes or fixes; the feature is now described once, as it ships. ([#36](https://github.com/roquerodrigo/release-autopilot/pull/36))
+- Commits are now handed over to the notes oldest first in releases, matching the preview, so the notes stay consistent between the two. ([#36](https://github.com/roquerodrigo/release-autopilot/pull/36))
+
 ## [1.5.3](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.2...v1.5.3) (2026-11-17)
 
 ### Improvements
