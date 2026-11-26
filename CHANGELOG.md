@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.4...v1.6.0) (2026-11-26)
+
+### New features
+
+- New `force` input for the action and reusable workflow, plus a `--force` command line option and a `force` library option, open the release pull request even when nothing in the commits matters to users. ([#41](https://github.com/roquerodrigo/release-autopilot/pull/41))
+- A forced release pull request stays forced on later runs until it is merged or closed, and its notes always include at least one entry, which states that the release brings internal maintenance when nothing else applies. ([#41](https://github.com/roquerodrigo/release-autopilot/pull/41))
+
 ## [1.5.4](https://github.com/roquerodrigo/release-autopilot/compare/v1.5.3...v1.5.4) (2026-11-17)
 
 ### Bug fixes
