@@ -5,7 +5,11 @@ import type { CommitDetails, ReleaseSource } from '../domain/release-source.ts'
 import type { StructuredVersionFile } from '../domain/version-file.ts'
 
 export interface NotesAuthor {
-  write(source: ReleaseSource, configuration: ProjectConfiguration): Promise<WrittenNotes>
+  write(source: ReleaseSource, configuration: ProjectConfiguration, demand: ReleaseDemand): Promise<WrittenNotes>
+}
+
+export interface ReleaseDemand {
+  forced: boolean
 }
 
 export interface ReleasePlanner {

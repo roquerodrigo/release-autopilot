@@ -96,6 +96,13 @@ describe('the command line', () => {
     assert.deepEqual(JSON.parse(written), { pullRequest: null, released: false, tag: null, version: null })
   })
 
+  it('forces the release pull request', async () => {
+    const { errors, exitCode, writes } = await run(['--force'])
+    assert.equal(exitCode, 0)
+    assert.match(String(writes.find((write) => write.path === 'pulls')?.body.body), /"forced":true/)
+    assert.match(errors, /The release is forced/)
+  })
+
   it('prints the notes of a past release', async () => {
     const { exitCode, writes, written } = await run(['--preview-previous-tag', 'v1.0.0', '--preview-release-tag', 'v1.1.0'])
     assert.equal(exitCode, 0)
@@ -115,7 +122,7 @@ describe('the command line', () => {
     ['no repository is given', [], { ...ENVIRONMENT, GITHUB_REPOSITORY: undefined }, /set --repository or GITHUB_REPOSITORY/],
     ['the repository is not owner/name', ['--repository', 'project'], ENVIRONMENT, /owner\/name, not "project"/],
     ['a preview names one tag only', ['--preview-release-tag', 'v1.1.0'], ENVIRONMENT, /go together/],
-    ['an option is unknown', ['--force'], ENVIRONMENT, /Unknown option '--force'/],
+    ['an option is unknown', ['--publish'], ENVIRONMENT, /Unknown option '--publish'/],
   ] as const) {
     it(`fails when ${situation}`, async () => {
       const { errors, exitCode, writes } = await run([...argumentList], UNRELEASED, environment)

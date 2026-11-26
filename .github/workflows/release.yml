@@ -8,6 +8,13 @@ on:
         required: false
         type: boolean
         default: false
+      force:
+        description: >-
+          Open the release pull request even when nothing in the commits since the last
+          release matters to those who use the project.
+        required: false
+        type: boolean
+        default: false
     secrets:
       token:
         description: >-
@@ -64,3 +71,4 @@ jobs:
           token: ${{ secrets.token || github.token }}
           anthropic-api-key: ${{ secrets.anthropic-api-key }}
           dry-run: ${{ inputs.dry-run }}
+          force: ${{ inputs.force }}

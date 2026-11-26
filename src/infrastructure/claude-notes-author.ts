@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-import type { NotesAuthor, Reporter } from '../application/ports.ts'
+import type { NotesAuthor, ReleaseDemand, Reporter } from '../application/ports.ts'
 import type { ProjectConfiguration } from '../domain/project-configuration.ts'
 import type { WrittenNotes } from '../domain/release-notes.ts'
 import type { ReleaseSource } from '../domain/release-source.ts'
@@ -19,7 +19,7 @@ export class ClaudeNotesAuthor implements NotesAuthor {
     this.reporter = reporter
   }
 
-  async write(source: ReleaseSource, configuration: ProjectConfiguration): Promise<WrittenNotes> {
+  async write(source: ReleaseSource, configuration: ProjectConfiguration, demand: ReleaseDemand): Promise<WrittenNotes> {
     const response = await this.client.messages.stream({
       max_tokens: MAXIMUM_OUTPUT_TOKENS,
       messages: [{ content: userMessage(source, configuration), role: 'user' }],
@@ -28,7 +28,7 @@ export class ClaudeNotesAuthor implements NotesAuthor {
         effort: configuration.effort,
         format: { schema: outputSchema(configuration), type: 'json_schema' },
       },
-      system: systemPrompt(configuration),
+      system: systemPrompt(configuration, demand),
     }).finalMessage()
     const { input_tokens: inputTokens, output_tokens: outputTokens } = response.usage
     this.reporter.info(`The model read ${inputTokens} tokens and wrote ${outputTokens}, and stopped with ${response.stop_reason}`)

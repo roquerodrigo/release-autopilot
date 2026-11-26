@@ -1,4 +1,4 @@
-import type { ReleasePullRequest, Reporter } from './ports.ts'
+import type { ReleaseDemand, ReleasePullRequest, Reporter } from './ports.ts'
 import type { PrepareReleasePullRequest } from './prepare-release-pull-request.ts'
 import type { PublishedRelease, PublishMergedRelease } from './publish-merged-release.ts'
 
@@ -12,10 +12,11 @@ export async function runRelease(
   publishMerged: PublishMergedRelease,
   prepare: PrepareReleasePullRequest,
   reporter: Reporter,
+  demand: ReleaseDemand = { forced: false },
 ): Promise<ReleaseOutcome> {
   const published = await publishMerged.run(branch)
   try {
-    return { published, pullRequest: await prepare.run(branch) }
+    return { published, pullRequest: await prepare.run(branch, demand) }
   } catch (error) {
     if (!published) {
       throw error

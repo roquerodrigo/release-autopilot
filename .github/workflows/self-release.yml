@@ -3,6 +3,12 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Open the release pull request even when nothing relevant changed
+        type: boolean
+        default: false
 
 concurrency:
   group: release
@@ -44,6 +50,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          force: ${{ inputs.force == true }}
 
       # `v1` follows every 1.x release and the first 2.0.0 creates `v2`, leaving `v1` on
       # the last 1.x. `latest` follows every release, across major versions.

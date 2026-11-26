@@ -1,5 +1,6 @@
 import type {
   NotesAuthor,
+  ReleaseDemand,
   ReleasePlanner,
   ReleasePublisher,
   ReleasePullRequest,
@@ -16,12 +17,14 @@ import { isReleaseTag } from '../src/domain/release-plan.ts'
 export class FixedAuthor implements NotesAuthor {
   readonly answers: readonly (Error | WrittenNotes)[]
   calls = 0
+  demands: ReleaseDemand[] = []
 
   constructor(...answers: readonly (Error | WrittenNotes)[]) {
     this.answers = answers
   }
 
-  async write(): Promise<WrittenNotes> {
+  async write(_source: unknown, _configuration: unknown, demand: ReleaseDemand): Promise<WrittenNotes> {
+    this.demands.push(demand)
     const answer = this.answers[Math.min(this.calls, this.answers.length - 1)]
     this.calls += 1
     if (answer instanceof Error) {

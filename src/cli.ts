@@ -17,6 +17,8 @@ release once it is merged. Prints the outcome as JSON.
 Options:
   --repository <owner/name>      Repository to release. Defaults to GITHUB_REPOSITORY.
   --dry-run                      Plans the release and writes its notes, changing nothing.
+  --force                        Opens the release pull request even when nothing in the
+                                 commits matters to those who use the project.
   --preview-previous-tag <tag>   With --preview-release-tag, prints the notes of a past
   --preview-release-tag <tag>    release and changes nothing.
   --help                         Prints this text.
@@ -37,6 +39,7 @@ export async function runCommandLine(
       args: [...argumentList],
       options: {
         'dry-run': { type: 'boolean' },
+        'force': { type: 'boolean' },
         'help': { type: 'boolean' },
         'preview-previous-tag': { type: 'string' },
         'preview-release-tag': { type: 'string' },
@@ -57,6 +60,7 @@ export async function runCommandLine(
       anthropicApiKey: required(environment, 'ANTHROPIC_API_KEY'),
       dryRun: values['dry-run'],
       fetch: fetchImplementation,
+      force: values.force,
       reporter: reporterOn(output),
       repository: values.repository ?? required(environment, 'GITHUB_REPOSITORY', '--repository'),
       token: environment.GITHUB_TOKEN || required(environment, 'GH_TOKEN', 'GITHUB_TOKEN'),

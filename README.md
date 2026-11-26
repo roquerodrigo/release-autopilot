@@ -25,6 +25,12 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Open the release pull request even when nothing relevant changed
+        type: boolean
+        default: false
 
 concurrency:
   group: release
@@ -38,6 +44,8 @@ jobs:
       contents: write
       pull-requests: write
     uses: roquerodrigo/release-autopilot/.github/workflows/release.yml@v1
+    with:
+      force: ${{ inputs.force == true }}
     secrets:
       token: ${{ secrets.RELEASE_TOKEN }}
       anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -78,6 +86,15 @@ a release pull request opened with it runs no checks.
 
 `dry-run: true` plans the release and writes its notes, printing what would change
 without changing anything. Nothing counts as published, so `released` stays `"false"`.
+
+`force: true` opens the release pull request even when nothing in the commits since the
+last release matters to those who use the project, such as after changes to CI or to
+development dependencies only. The `workflow_dispatch` above runs it from the Actions
+tab, under **Run workflow**. The model is told that the release was asked for, and
+writes at least one entry, saying the release brings internal maintenance when nothing
+else applies. The pull request stays forced on the runs that follow, until it is merged
+or closed. A release still needs a conventional commit since the last tag to take a
+version from.
 `preview-previous-tag` and `preview-release-tag` write the notes of a past release to
 the job summary, to judge a prompt by what it produces.
 
@@ -100,6 +117,7 @@ It prints the outcome as JSON, and its progress to the standard error:
 | ------------------------------ | --------------------------------------------------------- |
 | `--repository <owner/name>`    | The repository to release. Defaults to `GITHUB_REPOSITORY` |
 | `--dry-run`                    | The same as `dry-run: true`                               |
+| `--force`                      | The same as `force: true`                                 |
 | `--preview-previous-tag <tag>` | With `--preview-release-tag`, prints the notes of a past release |
 | `--preview-release-tag <tag>`  | The tag of the past release to preview                    |
 
@@ -117,7 +135,8 @@ const autopilot = new ReleaseAutopilot({
 const { published, pullRequest } = await autopilot.release()
 ```
 
-`dryRun: true` changes nothing, `previewPastRelease(previousTag, releaseTag)` returns
+`dryRun: true` changes nothing, `force: true` opens the pull request whatever the notes
+find, `previewPastRelease(previousTag, releaseTag)` returns
 the notes of a past release, and a `reporter` with `info` and `warning` receives the
 progress, which otherwise goes to the console.
 
@@ -173,7 +192,7 @@ follows the edit.
 - Rejected notes are written again, up to three attempts, and the run fails only when
   every attempt is rejected. The log shows every answer of the model, and each rejection
   as a warning with its reason.
-- A pull request left with nothing relevant to release is closed.
+- A pull request left with nothing relevant to release is closed, unless it was forced.
 
 By default the release ends with a section that invites sponsorship, in its language,
 linking to the sponsors page of the owner of the repository. `support: false` leaves it

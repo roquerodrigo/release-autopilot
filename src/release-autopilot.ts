@@ -18,6 +18,7 @@ export interface ReleaseAutopilotOptions {
   anthropicApiKey: string
   dryRun?: boolean
   fetch?: typeof fetch
+  force?: boolean
   reporter?: Reporter
   repository: string
   token: string
@@ -60,7 +61,7 @@ export class ReleaseAutopilot {
   }
 
   async release(): Promise<ReleaseOutcome> {
-    const { dryRun, fetch, repository, token } = this.options
+    const { dryRun, fetch, force, repository, token } = this.options
     const actualPublisher = new GitHubReleasePublisher(this.octokit, repository, this.reporter)
     const publisher: ReleasePublisher = dryRun ?
         new DryRunReleasePublisher(actualPublisher, this.reporter) :
@@ -78,6 +79,7 @@ export class ReleaseAutopilot {
         reporter: this.reporter,
       }),
       this.reporter,
+      { forced: force === true },
     )
   }
 }

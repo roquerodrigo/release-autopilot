@@ -29,7 +29,7 @@ describe('ClaudeNotesAuthor', () => {
   it('asks the configured model at the configured effort, with no tools', async () => {
     const { author, requests } = authorAnswering(JSON.stringify(NOTES))
     const configuration = ProjectConfiguration.parse('model: claude-opus-5-5\neffort: high\n', 'en')
-    assert.deepEqual(await author.write(SOURCE, configuration), NOTES)
+    assert.deepEqual(await author.write(SOURCE, configuration, { forced: false }), NOTES)
     assert.equal(requests[0].model, 'claude-opus-5-5')
     assert.equal((requests[0].output_config as { effort: string }).effort, 'high')
     assert.equal(requests[0].tools, undefined)
@@ -37,7 +37,7 @@ describe('ClaudeNotesAuthor', () => {
 
   it('falls back to the default model and effort', async () => {
     const { author, reporter, requests } = authorAnswering(JSON.stringify(NOTES))
-    await author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'))
+    await author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'), { forced: false })
     assert.deepEqual(reporter.infos, [
       'The model read 1 tokens and wrote 1, and stopped with end_turn',
       `The model answered: ${JSON.stringify(NOTES)}`,
@@ -48,13 +48,13 @@ describe('ClaudeNotesAuthor', () => {
 
   it('rejects notes the model did not finish, after logging what it wrote', async () => {
     const { author, reporter } = authorAnswering('{"entries"', 'max_tokens')
-    await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en')), RejectedNotesError)
+    await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'), { forced: false }), RejectedNotesError)
     assert.equal(reporter.infos.at(-1), 'The model answered: {"entries"')
   })
 
   it('rejects an answer with no text', async () => {
     const { author, reporter } = authorAnswering(undefined)
-    await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en')), RejectedNotesError)
+    await assert.rejects(author.write(SOURCE, ProjectConfiguration.parse(undefined, 'en'), { forced: false }), RejectedNotesError)
     assert.equal(reporter.infos.length, 1)
   })
 })
