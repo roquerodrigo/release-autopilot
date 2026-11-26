@@ -12,6 +12,7 @@ import { fakeGitHub, type FakeRepository, type RecordedWrite } from './fake-gith
 const INPUTS: Record<string, string> = {
   'INPUT_ANTHROPIC-API-KEY': 'key',
   'INPUT_DRY-RUN': 'false',
+  'INPUT_FORCE': 'false',
   'INPUT_PREVIEW-PREVIOUS-TAG': '',
   'INPUT_PREVIEW-RELEASE-TAG': '',
   'INPUT_REPOSITORY': 'owner/project',
@@ -46,11 +47,16 @@ describe('the action', () => {
     }
   })
 
-  const run = async (repository: FakeRepository, notes = NOTES) => {
+  const run = async (repository: FakeRepository, notes = NOTES, prompts: string[] = []) => {
     const writes: RecordedWrite[] = []
     const github = fakeGitHub(repository, writes)
-    await runAction(async (input, init) =>
-      new URL(String(input)).hostname === 'api.anthropic.com' ? claudeAnswer(notes) : github(input, init))
+    await runAction(async (input, init) => {
+      if (new URL(String(input)).hostname !== 'api.anthropic.com') {
+        return github(input, init)
+      }
+      prompts.push(String(init?.body))
+      return claudeAnswer(notes)
+    })
     return writes
   }
 
@@ -121,6 +127,19 @@ describe('the action', () => {
     }, NOTHING_RELEVANT)
     assert.deepEqual(writes, [])
     assert.equal(output('pull-request'), '')
+  })
+
+  it('opens a forced pull request and tells the model it is forced', async () => {
+    process.env.INPUT_FORCE = 'true'
+    const prompts: string[] = []
+    const writes = await run({
+      commits: [FIX, RELEASED],
+      files: {},
+      releases: [{ sha: 'released', tag: 'v1.0.0' }],
+    }, NOTES, prompts)
+    assert.match(prompts[0], /The maintainer asked for this release/)
+    assert.match(String(writes.find((write) => write.path === 'pulls')?.body.body), /"forced":true/)
+    assert.equal(output('pull-request'), 'https://github.test/pull/7')
   })
 
   it('refuses a version that already has its tag', async () => {

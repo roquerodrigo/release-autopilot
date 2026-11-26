@@ -14,6 +14,7 @@ export async function runAction(fetchImplementation?: typeof fetch): Promise<voi
     anthropicApiKey: core.getInput('anthropic-api-key', { required: true }),
     dryRun: core.getBooleanInput('dry-run'),
     fetch: fetchImplementation,
+    force: core.getBooleanInput('force'),
     reporter,
     repository: core.getInput('repository', { required: true }),
     token: core.getInput('token', { required: true }),

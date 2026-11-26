@@ -37,6 +37,13 @@ describe('systemPrompt', () => {
     assert.match(prompt, /check whether an earlier commit of this release introduced it/)
   })
 
+  it('lets a release with nothing relevant out only when it is not forced', () => {
+    assert.match(systemPrompt(english()), /Return no entries when nothing in the data changes anything/)
+    const forced = systemPrompt(english(), { forced: true })
+    assert.doesNotMatch(forced, /Return no entries when nothing/)
+    assert.match(forced, /Never return an empty list of entries, whatever the guidance above says/)
+  })
+
   it('asks for a title and for bold only when configured', () => {
     assert.doesNotMatch(systemPrompt(english()), /`title` names the release|\*\*bold\*\*/)
     assert.match(systemPrompt(english('title: true')), /`title` names the release/)

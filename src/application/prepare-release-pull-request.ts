@@ -1,7 +1,7 @@
 import type { LocalizedNotes } from '../domain/release-notes.ts'
 import type { FileChange, ReleasePlan } from '../domain/release-plan.ts'
 import type { PatternVersionFile, StructuredVersionFile, VersionFile } from '../domain/version-file.ts'
-import type { NotesAuthor, ReleasePlanner, ReleasePublisher, ReleasePullRequest, Reporter, RepositoryReader } from './ports.ts'
+import type { NotesAuthor, ReleaseDemand, ReleasePlanner, ReleasePublisher, ReleasePullRequest, Reporter, RepositoryReader } from './ports.ts'
 
 import { ReleaseVersionConflictError } from '../domain/errors.ts'
 import { changelogWithEntry, pullRequestBodyOf, stateOfPullRequest } from '../domain/release-documents.ts'
@@ -29,7 +29,7 @@ export class PrepareReleasePullRequest {
     this.collaborators = collaborators
   }
 
-  async run(branch: string): Promise<ReleasePullRequest | undefined> {
+  async run(branch: string, requested: ReleaseDemand = { forced: false }): Promise<ReleasePullRequest | undefined> {
     const { author, planner, publisher, reader, reporter } = this.collaborators
     const headSha = await reader.headOf(branch)
     const snapshot = await projectSnapshotAt(reader, headSha)
@@ -49,9 +49,14 @@ export class PrepareReleasePullRequest {
     reporter.info(`Next version: ${plan.version}, from ${counted(plan.commits.length, 'commit')} on ${branch} since ${plan.previousTag ?? 'its first commit'}`)
     await this.assertVersionIsNew(plan, branch, configuration.initialVersion)
 
+    const demand: ReleaseDemand = { forced: requested.forced || stateOfPullRequest(open?.body)?.forced === true }
+    if (demand.forced) {
+      reporter.info('The release is forced, so its pull request opens even when nothing in these commits matters to those who use the project')
+    }
     const fingerprint = notesFingerprint({
       commitShas: plan.commits.map((commit) => commit.sha),
       configuration: snapshot.configurationText,
+      forced: demand.forced,
       hacsManifest: snapshot.hacsManifest,
       version: plan.version,
     })
@@ -62,7 +67,7 @@ export class PrepareReleasePullRequest {
 
     const source = await collectReleaseSource(reader, plan.commits, configuration)
     reporter.info(`Writing the notes with ${configuration.model}, at ${configuration.effort} effort`)
-    const { notes, written } = await acceptedNotesOf(author, source, configuration, reporter)
+    const { notes, written } = await acceptedNotesOf(author, source, configuration, reporter, demand)
     if (written.entries.length === 0) {
       reporter.info('Nothing in these commits matters to those who use the project, so no release pull request opens')
       return this.withdraw(open, branch)
@@ -73,7 +78,7 @@ export class PrepareReleasePullRequest {
       base: branch,
       body: pullRequestBodyOf(
         [heading, notes[0].text.trim(), support?.trim()].filter(Boolean).join('\n\n'),
-        { fingerprint, version: plan.version },
+        { fingerprint, ...demand.forced ? { forced: true } : {}, version: plan.version },
       ),
       changes: [
         ...plan.fileChanges,

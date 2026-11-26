@@ -4,6 +4,7 @@ const MARKER = /\n*<!-- release-autopilot: (?<state>\{.*\}) -->\s*$/
 
 export interface ReleasePullRequestState {
   fingerprint: string
+  forced?: true
   version: string
 }
 

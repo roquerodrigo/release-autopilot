@@ -31,10 +31,17 @@ export function isReleaseTag(name: string): boolean {
 export function notesFingerprint(material: {
   commitShas: readonly string[]
   configuration: string | undefined
+  forced?: boolean
   hacsManifest: string | undefined
   version: string
 }): string {
-  const lines = [material.configuration ?? '', material.hacsManifest ?? '', material.version, ...material.commitShas]
+  const lines = [
+    material.configuration ?? '',
+    material.hacsManifest ?? '',
+    material.version,
+    ...material.commitShas,
+    ...material.forced ? ['forced'] : [],
+  ]
   return createHash('sha256').update(lines.join('\n')).digest('hex')
 }
 

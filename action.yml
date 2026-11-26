@@ -25,6 +25,13 @@ inputs:
     description: Plan the release and write its notes, printing what would change without changing anything.
     required: false
     default: "false"
+  force:
+    description: >-
+      Open the release pull request even when nothing in the commits since the last
+      release matters to those who use the project. The pull request stays forced until
+      it is merged or closed.
+    required: false
+    default: "false"
   preview-previous-tag:
     description: With preview-release-tag, writes the notes of a past release to the job summary and changes nothing.
     required: false

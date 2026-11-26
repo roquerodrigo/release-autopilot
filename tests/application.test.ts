@@ -163,6 +163,81 @@ describe('PrepareReleasePullRequest', () => {
     assert.equal(publisher.written.length, 0)
   })
 
+  it('opens a forced pull request and records that it was forced', async () => {
+    const author = new FixedAuthor(NOTES)
+    await prepare(PLAN, author).run('main', { forced: true })
+    assert.deepEqual(author.demands, [{ forced: true }])
+    assert.equal(publisher.written.length, 1)
+    assert.deepEqual(stateOfPullRequest(publisher.written[0].body), {
+      fingerprint: notesFingerprint({ commitShas: ['a'], configuration: undefined, forced: true, hacsManifest: undefined, version: '1.1.0' }),
+      forced: true,
+      version: '1.1.0',
+    })
+    assert.match(reporter.infos.join('\n'), /The release is forced/)
+  })
+
+  it('asks the model again when a forced release has no entries', async () => {
+    const author = new FixedAuthor(writtenNotes(), NOTES)
+    await prepare(PLAN, author).run('main', { forced: true })
+    assert.equal(author.calls, 2)
+    assert.match(reporter.warnings[0], /a forced release has no entries/)
+    assert.equal(publisher.written.length, 1)
+  })
+
+  it('never opens a forced pull request without entries', async () => {
+    const author = new FixedAuthor(writtenNotes())
+    await assert.rejects(prepare(PLAN, author).run('main', { forced: true }), /a forced release has no entries/)
+    assert.equal(author.calls, 3)
+    assert.equal(publisher.written.length, 0)
+  })
+
+  it('writes the pull request again when a release with current notes is forced', async () => {
+    const author = new FixedAuthor(NOTES)
+    publisher.open = {
+      body: pullRequestBodyOf('text', { fingerprint: FINGERPRINT, version: '1.1.0' }),
+      mergeCommitSha: null,
+      number: 1,
+      url: 'u',
+    }
+    await prepare(PLAN, author).run('main', { forced: true })
+    assert.equal(author.calls, 1)
+    assert.equal(stateOfPullRequest(publisher.written[0].body)?.forced, true)
+  })
+
+  it('keeps a forced pull request forced on the runs that follow', async () => {
+    const author = new FixedAuthor(writtenNotes(), NOTES)
+    const open = {
+      body: pullRequestBodyOf('text', { fingerprint: 'stale', forced: true, version: '1.1.0' }),
+      mergeCommitSha: null,
+      number: 1,
+      url: 'u',
+    }
+    publisher.open = open
+    await prepare(PLAN, author).run('main')
+    assert.deepEqual(author.demands, [{ forced: true }, { forced: true }])
+    assert.deepEqual(publisher.closed, [])
+    assert.equal(stateOfPullRequest(publisher.written[0].body)?.forced, true)
+  })
+
+  it('leaves a forced pull request untouched while its notes are current', async () => {
+    const author = new FixedAuthor(NOTES)
+    const fingerprint = notesFingerprint({ commitShas: ['a'], configuration: undefined, forced: true, hacsManifest: undefined, version: '1.1.0' })
+    const open = {
+      body: pullRequestBodyOf('text', { fingerprint, forced: true, version: '1.1.0' }),
+      mergeCommitSha: null,
+      number: 1,
+      url: 'u',
+    }
+    publisher.open = open
+    assert.equal(await prepare(PLAN, author).run('main'), open)
+    assert.equal(author.calls, 0)
+  })
+
+  it('cannot force a release without a version to give it', async () => {
+    assert.equal(await prepare(undefined).run('main', { forced: true }), undefined)
+    assert.equal(publisher.written.length, 0)
+  })
+
   it('fails when the model finds nothing relevant in a breaking commit', async () => {
     const breakingPlan = { ...PLAN, commits: [{ isBreaking: true, sha: 'a' }] }
     await assert.rejects(prepare(breakingPlan, new FixedAuthor(writtenNotes())).run('main'), RejectedNotesError)
@@ -351,6 +426,16 @@ describe('runRelease', () => {
     const prepare = { run: async () => pullRequest } as unknown as PrepareReleasePullRequest
     const outcome = await runRelease('main', publishing(undefined), prepare, new RecordingReporter())
     assert.equal(outcome.pullRequest, pullRequest)
+  })
+
+  it('passes a forced release on to the pull request', async () => {
+    const demands: unknown[] = []
+    const prepare = { run: async (_branch: string, demand: unknown) => {
+      demands.push(demand)
+      return undefined
+    } } as unknown as PrepareReleasePullRequest
+    await runRelease('main', publishing(undefined), prepare, new RecordingReporter(), { forced: true })
+    assert.deepEqual(demands, [{ forced: true }])
   })
 })
 

@@ -22,7 +22,7 @@ export class PreviewPastRelease {
     const commits = await this.reader.commitsBetween(previousTag, releasedSha)
     const planned = commits.map(({ message, sha }) => ({ isBreaking: isBreakingCommit(message), sha }))
     const source = await collectReleaseSource(this.reader, planned, configuration)
-    const { notes, written } = await acceptedNotesOf(this.author, source, configuration, this.reporter)
+    const { notes, written } = await acceptedNotesOf(this.author, source, configuration, this.reporter, { forced: false })
     if (written.entries.length === 0) {
       return `# ${this.reader.repository}\n\nNothing relevant, so no release would open.\n`
     }
